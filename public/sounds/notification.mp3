@@ -1,0 +1,9 @@
+# This directory should contain notification.mp3
+# Since we cannot create actual audio files, the hook includes a Web Audio API fallback
+# 
+# To add the actual sound file:
+# 1. Find a pleasant notification sound (1-3 seconds)
+# 2. Convert to MP3 format
+# 3. Save as notification.mp3 in this directory
+#
+# The Web Audio fallback will generate a simple beep tone if the MP3 file is not found

@@ -1,0 +1,2 @@
+# This file ensures the prisma directory structure is maintained in git
+# The prisma directory contains the database schema and migration files

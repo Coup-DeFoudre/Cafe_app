@@ -1,0 +1,211 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+enum OrderType {
+  DINE_IN
+  DELIVERY
+}
+
+enum PaymentMethod {
+  CASH
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+model Cafe {
+  id            String    @id @default(cuid())
+  name          String
+  subdomain     String    @unique
+  slug          String    @unique
+  logo          String?
+  bannerImage   String?
+  tagline       String?
+  description   String?
+  phone         String?
+  email         String?
+  address       String?
+  businessHours Json?
+  socialLinks   Json?
+  themeColors   Json?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  menuCategories MenuCategory[]
+  menuItems      MenuItem[]
+  orders         Order[]
+  customers      Customer[]
+  settings       Settings?
+  admins         Admin[]
+
+  @@map("cafes")
+}
+
+model MenuCategory {
+  id          String     @id @default(cuid())
+  cafeId      String
+  name        String
+  description String?
+  order       Int        @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  cafe      Cafe       @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  menuItems MenuItem[]
+
+  @@index([cafeId])
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id             String    @id @default(cuid())
+  cafeId         String
+  categoryId     String
+  name           String
+  description    String?
+  price          Float
+  image          String?
+  isAvailable    Boolean   @default(true)
+  isVeg          Boolean   @default(true)
+  customizations Json?
+  order          Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  cafe        Cafe        @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  category    MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+
+  @@index([cafeId, categoryId])
+  @@map("menu_items")
+}
+
+model Order {
+  id                   String         @id @default(cuid())
+  cafeId               String
+  customerId           String?
+  orderNumber          String         @unique
+  customerName         String
+  customerPhone        String
+  orderType            OrderType
+  tableNumber          String?
+  deliveryAddress      String?
+  items                Json
+  subtotal             Float
+  tax                  Float          @default(0)
+  deliveryCharge       Float          @default(0)
+  discount             Float          @default(0)
+  total                Float
+  paymentMethod        PaymentMethod
+  paymentStatus        PaymentStatus  @default(PENDING)
+  paymentReferenceId   String?
+  status               OrderStatus    @default(PENDING)
+  specialInstructions  String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  cafe       Cafe       @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  customer   Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([cafeId, status])
+  @@index([cafeId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  menuItemId     String
+  name           String   // Snapshot of item name
+  price          Float    // Snapshot of price
+  quantity       Int
+  customizations Json?    // Selected customizations
+  subtotal       Float
+  createdAt      DateTime @default(now())
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  cafeId     String
+  name       String
+  phone      String
+  email      String?
+  orderCount Int      @default(0)
+  totalSpent Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cafe   Cafe    @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([cafeId, phone])
+  @@index([cafeId])
+  @@map("customers")
+}
+
+model Settings {
+  id                     String   @id @default(cuid())
+  cafeId                 String   @unique
+  deliveryEnabled        Boolean  @default(false)
+  deliveryCharge         Float    @default(0)
+  minOrderValue          Float    @default(0)
+  taxRate                Float    @default(0) // Percentage
+  taxEnabled             Boolean  @default(false)
+  onlinePaymentEnabled   Boolean  @default(false)
+  paymentQrCode          String?
+  upiId                  String?
+  currency               String   @default("INR")
+  currencySymbol         String   @default("₹")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @default(now())
+
+  cafe Cafe @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  cafeId    String
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("OWNER")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  cafe Cafe @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@map("admins")
+}
+
