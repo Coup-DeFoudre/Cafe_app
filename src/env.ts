@@ -16,4 +16,29 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
 })
 
-export const env = envSchema.parse(process.env)
+type Env = z.infer<typeof envSchema>
+
+// Lazy validation - only validate when env is actually accessed at runtime
+// This prevents build-time failures when Next.js analyzes modules
+let cachedEnv: Env | null = null
+
+function getEnv(): Env {
+  if (cachedEnv) return cachedEnv
+  
+  // Skip validation during build if DATABASE_URL is not set
+  // This allows Next.js to analyze routes without failing
+  if (!process.env.DATABASE_URL) {
+    return process.env as unknown as Env
+  }
+  
+  cachedEnv = envSchema.parse(process.env)
+  return cachedEnv
+}
+
+// Use a Proxy to lazily validate env on first access
+export const env = new Proxy({} as Env, {
+  get(_, prop: keyof Env) {
+    const envObj = getEnv()
+    return envObj[prop]
+  }
+})
