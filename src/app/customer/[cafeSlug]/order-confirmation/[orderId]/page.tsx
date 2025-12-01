@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { Suspense } from 'react';
 import OrderConfirmationPageClient from '@/components/customer/OrderConfirmationPageClient';
 
