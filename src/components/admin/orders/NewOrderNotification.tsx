@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Bell, X } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,11 @@ export function NewOrderNotification({
 }: NewOrderNotificationProps) {
   const [isVisible, setIsVisible] = useState(true)
 
+  const handleDismiss = useCallback(() => {
+    setIsVisible(false)
+    setTimeout(onDismiss, 300) // Allow animation to complete
+  }, [onDismiss])
+
   useEffect(() => {
     // Sound is already played by the hook, so we only handle auto-dismiss
     
@@ -38,12 +43,7 @@ export function NewOrderNotification({
     }, 10000)
 
     return () => clearTimeout(timer)
-  }, [])
-
-  const handleDismiss = () => {
-    setIsVisible(false)
-    setTimeout(onDismiss, 300) // Allow animation to complete
-  }
+  }, [handleDismiss])
 
   const handleViewOrder = () => {
     onViewOrder()

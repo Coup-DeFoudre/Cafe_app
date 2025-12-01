@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, ArrowLeft, Home, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Home, Loader2, AlertCircle, Wifi } from 'lucide-react';
 import { toast } from 'sonner';
 import { OrderResponse, OrderStatus, PaymentMethod, PaymentStatus, OrderType } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRealtimeOrderStatus } from '@/hooks/useRealtimeOrderStatus';
 
 interface OrderConfirmationPageClientProps {
   orderId: string;
@@ -56,6 +57,28 @@ export default function OrderConfirmationPageClient({ orderId, cafeSlug }: Order
       fetchOrderDetails();
     }
   }, [orderId]);
+
+  // Real-time status update handler
+  const handleStatusUpdate = useCallback((data: { orderId: string; status: OrderStatus; orderNumber: string }) => {
+    setOrder(prev => {
+      if (!prev) return null
+      
+      // Show toast notification for status change
+      toast.info(`Order status updated to ${data.status.replace('_', ' ')}`)
+      
+      return {
+        ...prev,
+        status: data.status
+      }
+    })
+  }, [])
+
+  // Subscribe to real-time status updates
+  const { isConnected } = useRealtimeOrderStatus(
+    order?.cafe?.id || '',
+    orderId,
+    handleStatusUpdate
+  )
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -217,11 +240,17 @@ export default function OrderConfirmationPageClient({ orderId, cafeSlug }: Order
               </div>
               
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   Status
+                  {isConnected && (
+                    <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                      <Wifi className="w-3 h-3" />
+                      Live
+                    </span>
+                  )}
                 </label>
                 <div className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1",
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 transition-all duration-300",
                   getStatusColor(order.status)
                 )}>
                   {order.status.replace('_', ' ')}

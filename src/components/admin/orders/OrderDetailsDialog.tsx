@@ -141,9 +141,9 @@ export function OrderDetailsDialog({
                       <p className="text-sm text-gray-600">
                         Quantity: {item.quantity} × {formatCurrency(item.price)}
                       </p>
-                      {item.customizations && (
+                      {item.customizations && Object.keys(item.customizations).length > 0 && (
                         <p className="text-xs text-gray-500 mt-1">
-                          <span className="font-medium">Customizations:</span> {item.customizations}
+                          <span className="font-medium">Customizations:</span> {JSON.stringify(item.customizations)}
                         </p>
                       )}
                     </div>

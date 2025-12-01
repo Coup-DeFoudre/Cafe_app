@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers';
 import { generateOrderNumber, calculateSubtotal, calculateTax, calculateTotal } from '@/lib/utils/order';
-import { OrderType, PaymentMethod, PaymentStatus, OrderStatus } from '@/types';
+import { OrderType, PaymentMethod, PaymentStatus, OrderStatus, type OrderNotification } from '@/types';
+import { triggerOrderCreated } from '@/lib/pusher-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -175,6 +176,23 @@ export async function POST(request: NextRequest) {
 
       return { order, orderItems };
     });
+
+    // Trigger real-time notification for admin dashboard
+    try {
+      const orderNotification: OrderNotification = {
+        id: result.order.id,
+        orderNumber: result.order.orderNumber,
+        customerName: result.order.customerName,
+        total: result.order.total,
+        orderType: result.order.orderType,
+        status: result.order.status,
+        createdAt: result.order.createdAt.toISOString(),
+      }
+      await triggerOrderCreated(cafe.id, orderNotification)
+    } catch (pusherError) {
+      // Log error but don't fail the order creation
+      console.error('Failed to send real-time notification:', pusherError)
+    }
 
     return successResponse({
       id: result.order.id,

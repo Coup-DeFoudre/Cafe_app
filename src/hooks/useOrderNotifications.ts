@@ -1,7 +1,21 @@
-import { useEffect, useState, useRef } from 'react'
+/**
+ * React hook for admin order notifications
+ * Replaced polling with real-time Pusher subscriptions for instant notifications
+ * 
+ * Features:
+ * - Real-time order notifications via Pusher WebSocket
+ * - Sound alerts (with mute toggle)
+ * - Graceful fallback to polling if Pusher is not configured
+ * - Persistent mute preference in localStorage
+ */
+
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRealtimeOrders } from './useRealtimeOrders'
 import { OrderNotification } from '@/types'
 import { apiGet } from '@/lib/api-client'
 import type { OrdersApiResponse } from '@/types'
+import { pusherClient } from '@/lib/pusher-client'
 
 interface UseOrderNotificationsReturn {
   newOrderNotification: OrderNotification | null
@@ -15,6 +29,8 @@ export function useOrderNotifications(): UseOrderNotificationsReturn {
   const [isMuted, setIsMuted] = useState(false)
   const lastOrderIdRef = useRef<string | null>(null)
   const intervalRef = useRef<number | null>(null)
+  const { data: session } = useSession()
+  const cafeId = session?.user?.cafeId
 
   // Load mute preference from localStorage
   useEffect(() => {
@@ -29,53 +45,8 @@ export function useOrderNotifications(): UseOrderNotificationsReturn {
     localStorage.setItem('orderNotificationsMuted', newMutedState.toString())
   }
 
-  // Polling function
-  const checkForNewOrders = async () => {
-    try {
-      const { orders } = await apiGet<OrdersApiResponse>('/api/admin/orders?page=1&limit=1')
-      if (orders.length > 0) {
-        const latestOrder = orders[0]
-        
-        // Check if this is a new order
-        if (lastOrderIdRef.current && lastOrderIdRef.current !== latestOrder.id) {
-          // New order detected
-          const notification: OrderNotification = {
-            id: latestOrder.id,
-            orderNumber: latestOrder.orderNumber,
-            customerName: latestOrder.customerName,
-            total: latestOrder.total,
-            orderType: latestOrder.orderType,
-            status: latestOrder.status,
-            createdAt: latestOrder.createdAt
-          }
-
-          setNewOrderNotification(notification)
-
-          // Play sound if not muted
-          if (!isMuted) {
-            try {
-              const audio = new Audio('/sounds/notification.mp3')
-              audio.play().catch(() => {
-                // Fallback to Web Audio API beep
-                playBeepSound()
-              })
-            } catch {
-              // Fallback to Web Audio API beep
-              playBeepSound()
-            }
-          }
-        }
-        
-        // Update the last known order ID
-        lastOrderIdRef.current = latestOrder.id
-      }
-    } catch (error) {
-      console.error('Error checking for new orders:', error)
-    }
-  }
-
   // Web Audio API fallback beep sound
-  const playBeepSound = () => {
+  const playBeepSound = useCallback(() => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       const oscillator = audioContext.createOscillator()
@@ -95,10 +66,85 @@ export function useOrderNotifications(): UseOrderNotificationsReturn {
     } catch (error) {
       console.error('Web Audio API not supported:', error)
     }
-  }
+  }, [])
 
-  // Set up polling interval
+  // Play notification sound
+  const playNotificationSound = useCallback(() => {
+    if (isMuted) return
+
+    try {
+      const audio = new Audio('/sounds/notification.mp3')
+      audio.play().catch(() => {
+        // Fallback to Web Audio API beep
+        playBeepSound()
+      })
+    } catch {
+      // Fallback to Web Audio API beep
+      playBeepSound()
+    }
+  }, [isMuted, playBeepSound])
+
+  // Handle new order from real-time subscription
+  const handleNewOrder = useCallback((order: OrderNotification) => {
+    // Check if this is a new order (deduplication)
+    if (lastOrderIdRef.current && lastOrderIdRef.current === order.id) {
+      return
+    }
+
+    // Update last known order ID
+    lastOrderIdRef.current = order.id
+
+    // Set notification
+    setNewOrderNotification(order)
+
+    // Play sound
+    playNotificationSound()
+  }, [playNotificationSound])
+
+  // Real-time subscription (if Pusher is configured and cafeId is available)
+  const { isConnected } = useRealtimeOrders(cafeId || '', handleNewOrder)
+
+  // Fallback polling if Pusher is not configured
   useEffect(() => {
+    if (pusherClient && cafeId) {
+      // Pusher is configured, no need for polling
+      return
+    }
+
+    // Pusher not available, fall back to polling
+    console.warn('Pusher not configured. Falling back to polling for order notifications.')
+
+    const checkForNewOrders = async () => {
+      try {
+        const { orders } = await apiGet<OrdersApiResponse>('/api/admin/orders?page=1&limit=1')
+        if (orders.length > 0) {
+          const latestOrder = orders[0]
+          
+          // Check if this is a new order
+          if (lastOrderIdRef.current && lastOrderIdRef.current !== latestOrder.id) {
+            // New order detected
+            const notification: OrderNotification = {
+              id: latestOrder.id,
+              orderNumber: latestOrder.orderNumber,
+              customerName: latestOrder.customerName,
+              total: latestOrder.total,
+              orderType: latestOrder.orderType,
+              status: latestOrder.status,
+              createdAt: latestOrder.createdAt
+            }
+
+            setNewOrderNotification(notification)
+            playNotificationSound()
+          }
+          
+          // Update the last known order ID
+          lastOrderIdRef.current = latestOrder.id
+        }
+      } catch (error) {
+        console.error('Error checking for new orders:', error)
+      }
+    }
+
     // Initial check to set the baseline
     checkForNewOrders()
 
@@ -110,7 +156,7 @@ export function useOrderNotifications(): UseOrderNotificationsReturn {
         clearInterval(intervalRef.current)
       }
     }
-  }, [isMuted])
+  }, [cafeId, isMuted, playNotificationSound])
 
   const dismissNotification = () => {
     setNewOrderNotification(null)

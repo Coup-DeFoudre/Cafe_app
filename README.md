@@ -6,13 +6,33 @@ A modern, scalable cafe ordering system built with Next.js 14, TypeScript, and P
 
 - **Multi-tenant Architecture** - Each cafe gets their own subdomain and isolated data
 - **Menu Management** - Full CRUD operations for menu categories and items
-- **Order Management** - Real-time order tracking and status updates
+- **Order Management** - Real-time order dashboard with WebSocket-based live updates, filters, and search
 - **Customer Management** - Track customer orders and preferences
 - **Admin Dashboard** - Comprehensive admin panel for cafe owners
+  - **Settings Management** - Configure cafe information, branding (logo/banner), business hours, social media links, payment settings (QR code/UPI), delivery options, tax settings, and theme colors
 - **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 - **Theme Customization** - Each cafe can customize their brand colors and styling
 - **Payment Integration** - Support for cash and online payments
 - **Real-time Updates** - Live order status updates for both customers and staff
+
+## 🔴 Real-time Features
+
+The system includes WebSocket-based real-time communication powered by Pusher:
+
+### Features
+- **Live Order Notifications** - Instant notifications for admin when new orders arrive
+- **Real-time Status Tracking** - Customers see order status updates live without refreshing
+- **Auto Reconnection** - Automatic reconnection with exponential backoff (max 5 attempts)
+- **Multi-tenant Isolation** - Secure channel-based isolation per cafe
+- **Sound Alerts** - Audio notifications for new orders (with mute toggle)
+- **Connection Indicators** - Visual feedback showing live connection status
+
+### How It Works
+- Admin dashboard receives instant notifications when customers place orders
+- Customers see their order status update in real-time on the confirmation page
+- All updates happen via WebSocket connections (no polling)
+- Private channels ensure cafes only receive their own events
+- Graceful fallback to polling if Pusher is not configured
 
 ## 🍽️ Menu Management
 
@@ -58,6 +78,12 @@ The system includes a comprehensive menu management interface with advanced feat
 #### File Upload
 - `POST /api/admin/upload` - Upload images to Cloudinary (5MB max, auto-optimization)
 
+### Settings API
+
+#### Settings Management
+- `GET /api/admin/settings` - Fetch cafe and settings data
+- `PATCH /api/admin/settings` - Update settings (supports multiple types: cafeInfo, branding, businessHours, socialLinks, themeColors, payment, delivery, tax)
+
 ### Usage Tips
 - **Reordering**: Only available when viewing a specific category without search filters
 - **Images**: Automatically optimized to 800x800px, quality:auto, WebP format when possible
@@ -77,6 +103,7 @@ The system includes a comprehensive menu management interface with advanced feat
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js (for admin panel)
 - **File Upload**: Cloudinary
+- **Real-time Communication**: Pusher (WebSocket-based events)
 - **Styling**: Tailwind CSS with CSS Variables
 - **Fonts**: Inter (Google Fonts)
 
@@ -122,6 +149,19 @@ Before you begin, ensure you have the following installed:
    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
    CLOUDINARY_API_KEY="your-api-key"
    CLOUDINARY_API_SECRET="your-api-secret"
+   
+   # Pusher (Required for Real-time Features)
+   # Get credentials from https://pusher.com dashboard
+   # 1. Sign up at pusher.com
+   # 2. Create a new Channels app
+   # 3. Copy credentials from dashboard
+   PUSHER_APP_ID="your-pusher-app-id"
+   PUSHER_KEY="your-pusher-key"
+   PUSHER_SECRET="your-pusher-secret"
+   PUSHER_CLUSTER="your-pusher-cluster"
+   # Client-side variables (use same values as above)
+   NEXT_PUBLIC_PUSHER_KEY="your-pusher-key"
+   NEXT_PUBLIC_PUSHER_CLUSTER="your-pusher-cluster"
    
    # Application
    NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -232,11 +272,19 @@ The admin panel provides comprehensive management tools for cafe owners and staf
 - **Order Management**: View and track all customer orders
 - **Analytics**: Popular items and revenue tracking
 - **Session Management**: Secure authentication with logout functionality
+- **Settings Management**: Comprehensive settings interface with multiple tabs:
+  - **General**: Configure cafe information (name, tagline, description, contact details, address)
+  - **Branding**: Upload and manage logo and banner images via Cloudinary
+  - **Business Hours**: Set day-wise opening hours with open/close times and closed toggles
+  - **Social Links**: Add social media links (Facebook, Instagram, Twitter, WhatsApp, Website)
+  - **Payment**: Configure online payment options (UPI ID, payment QR code upload), tax settings
+  - **Delivery**: Enable/disable delivery, set delivery charges and minimum order value
+  - **Theme**: Customize brand colors (primary, secondary, accent) with color picker and hex input
+  - Settings are cafe-scoped and affect customer-facing features
 
 ### Features Coming Soon
 - **Menu Management**: Add, edit, and organize menu items and categories
 - **Customer Management**: View customer profiles and order history  
-- **Settings**: Configure cafe details, payment options, and business hours
 - **Staff Management**: Add additional admin users with role-based access
 - **Reports**: Advanced analytics and sales reports
 
@@ -312,6 +360,37 @@ If you encounter any issues or have questions:
 1. Check the [Issues](https://github.com/your-repo/issues) page
 2. Create a new issue with detailed information
 3. Include error messages, screenshots, and steps to reproduce
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Real-time Updates Not Working
+- **Check Pusher credentials**: Verify all Pusher environment variables are set correctly in `.env`
+- **Check Pusher dashboard**: Visit pusher.com dashboard to view connection stats and debug logs
+- **Check browser console**: Look for Pusher connection errors in the browser developer console
+- **Verify channel names**: Ensure channel naming matches the pattern `private-cafe-{cafeId}`
+
+#### Connection Keeps Disconnecting
+- **Check Pusher plan limits**: Free tier has connection and message limits - upgrade if needed
+- **Network issues**: Check if firewall or proxy is blocking WebSocket connections
+- **Check app configuration**: Verify `forceTLS: true` and cluster settings match Pusher dashboard
+
+#### Events Not Received
+- **Verify channel subscription**: Check that the correct channel is being subscribed to
+- **Check event names**: Ensure event names match exactly (`order-created`, `order-status-updated`)
+- **Browser console errors**: Look for JavaScript errors that might prevent event handlers from running
+- **Server-side errors**: Check server logs for Pusher API errors during event triggering
+
+#### Database Connection Issues
+- Verify DATABASE_URL format and credentials
+- Ensure PostgreSQL is running
+- Check network connectivity to database server
+
+#### Image Upload Failures
+- Verify Cloudinary credentials are correct
+- Check file size (must be under 5MB)
+- Ensure internet connection for Cloudinary API access
 
 ## 🎯 Roadmap
 

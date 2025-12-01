@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { RefreshCw, Volume2, VolumeX } from 'lucide-react'
+import { RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
 import { toast } from 'sonner'
 import DashboardHeader from '@/components/admin/DashboardHeader'
 import { OrderFilters } from './OrderFilters'
@@ -10,7 +10,8 @@ import { OrderList } from './OrderList'
 import { OrderDetailsDialog } from './OrderDetailsDialog'
 import { NewOrderNotification } from './NewOrderNotification'
 import { useOrderNotifications } from '@/hooks/useOrderNotifications'
-import { OrderListItem, OrderFiltersState, OrdersApiResponse, Pagination } from '@/types'
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
+import { OrderListItem, OrderFiltersState, OrdersApiResponse, Pagination, OrderNotification } from '@/types'
 import { OrderStatus } from '@/types'
 import { apiGet } from '@/lib/api-client'
 
@@ -39,7 +40,7 @@ export function OrdersPageClient({
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   
-  // Order notifications hook
+  // Order notifications hook (now using real-time Pusher)
   const { 
     newOrderNotification, 
     dismissNotification, 
@@ -88,6 +89,21 @@ export function OrdersPageClient({
     }
   }, [filters, pagination.limit])
 
+  // Real-time order list updates
+  const handleNewOrderInList = useCallback((order: OrderNotification) => {
+    // Check if order matches current filters
+    const matchesStatus = filters.status.length === 0 || filters.status.includes(order.status)
+    const matchesType = !filters.orderType || order.orderType === filters.orderType
+    
+    if (matchesStatus && matchesType && pagination.page === 1) {
+      // Trigger a background refresh to get full order details
+      fetchOrders(1, false)
+    }
+  }, [filters.status, filters.orderType, pagination.page, fetchOrders])
+
+  // Subscribe to real-time order updates for the list
+  const { isConnected: isRealtimeConnected } = useRealtimeOrders(cafeId, handleNewOrderInList)
+
   const handleFilterChange = useCallback((newFilters: Partial<OrderFiltersState>) => {
     setFilters(prev => ({ ...prev, ...newFilters }))
   }, [])
@@ -134,12 +150,12 @@ export function OrdersPageClient({
     }, 500)
 
     return () => clearTimeout(timeout)
-  }, [filters.search])
+  }, [filters.search, fetchOrders])
 
   // Fetch orders when other filters change
   useEffect(() => {
     fetchOrders(1)
-  }, [filters.status, filters.orderType, filters.paymentMethod, filters.dateFrom, filters.dateTo])
+  }, [filters.status, filters.orderType, filters.paymentMethod, filters.dateFrom, filters.dateTo, fetchOrders])
 
   const activeFiltersCount = [
     filters.status.length > 0,
@@ -158,6 +174,17 @@ export function OrdersPageClient({
           description="Manage and track all cafe orders"
         />
         <div className="flex items-center gap-2">
+          {isRealtimeConnected ? (
+            <div className="flex items-center gap-1.5 text-xs text-green-600 px-2 py-1 bg-green-50 rounded-md">
+              <Wifi className="w-3 h-3" />
+              <span className="font-medium">Live</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded-md">
+              <WifiOff className="w-3 h-3" />
+              <span className="font-medium">Offline</span>
+            </div>
+          )}
           <Button 
             onClick={toggleMute}
             variant="outline"
@@ -172,6 +199,7 @@ export function OrdersPageClient({
             disabled={isRefreshing}
             variant="outline"
             className="shrink-0"
+            title="Real-time updates are active. Click to manually refresh if needed."
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh

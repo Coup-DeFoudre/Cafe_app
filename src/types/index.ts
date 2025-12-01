@@ -158,6 +158,7 @@ export interface OrderResponse {
   total: number
   createdAt: string
   cafe: {
+    id: string
     name: string
     logo: string | null
     phone: string | null
@@ -243,6 +244,23 @@ export interface OrderNotification {
   createdAt: string
 }
 
+/**
+ * Real-time event payload for order status updates
+ * Used in Pusher WebSocket events
+ */
+export interface OrderStatusUpdateEvent {
+  orderId: string
+  status: OrderStatus
+  orderNumber: string
+}
+
+/**
+ * Union type for all Pusher events
+ */
+export type PusherEvent = 
+  | { event: 'order-created'; data: OrderNotification }
+  | { event: 'order-status-updated'; data: OrderStatusUpdateEvent }
+
 // Admin order list specific interfaces
 export interface OrderListItem {
   id: string
@@ -301,4 +319,66 @@ export interface PrintReceiptData {
     phone?: string
     address?: string
   }
+}
+
+// Settings Management Interfaces
+export interface CafeWithSettings {
+  id: string
+  name: string
+  subdomain: string
+  slug: string
+  logo: string | null
+  bannerImage: string | null
+  tagline: string | null
+  description: string | null
+  phone: string | null
+  email: string | null
+  address: string | null
+  businessHours: BusinessHours | null
+  socialLinks: SocialLinks | null
+  themeColors: ThemeColors | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  settings: {
+    id: string
+    cafeId: string
+    deliveryEnabled: boolean
+    deliveryCharge: number
+    minOrderValue: number
+    taxRate: number
+    taxEnabled: boolean
+    onlinePaymentEnabled: boolean
+    paymentQrCode: string | null
+    upiId: string | null
+    currency: string
+    currencySymbol: string
+    createdAt: Date
+    updatedAt: Date
+  } | null
+}
+
+export interface UpdateCafeInfoInput {
+  name: string
+  tagline?: string | null
+  description?: string | null
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+}
+
+export interface UpdateBrandingInput {
+  logo?: string | null
+  bannerImage?: string | null
+}
+
+export interface UpdateSettingsInput {
+  deliveryEnabled?: boolean
+  deliveryCharge?: number
+  minOrderValue?: number
+  taxRate?: number
+  taxEnabled?: boolean
+  onlinePaymentEnabled?: boolean
+  paymentQrCode?: string | null
+  upiId?: string | null
 }

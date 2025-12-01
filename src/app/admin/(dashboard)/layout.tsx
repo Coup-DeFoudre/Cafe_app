@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth/next'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth-config'
 import AdminShell from '@/components/admin/AdminShell'
-import { SessionProvider } from 'next-auth/react'
+import SessionProviderWrapper from '@/components/admin/SessionProviderWrapper'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -16,8 +16,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   return (
-    <SessionProvider session={session}>
+    <SessionProviderWrapper session={session}>
       <AdminShell>{children}</AdminShell>
-    </SessionProvider>
+    </SessionProviderWrapper>
   )
 }

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { mapOrderToResponse } from '@/lib/mappers/order'
 import { OrderStatus } from '@prisma/client'
 import { z } from 'zod'
+import { triggerOrderStatusUpdated } from '@/lib/pusher-server'
 
 const UpdateStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus)
@@ -159,6 +160,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
       }
     })
+
+    // Trigger real-time status update notification
+    try {
+      await triggerOrderStatusUpdated(cafeId, {
+        orderId: updatedOrder.id,
+        status: updatedOrder.status,
+        orderNumber: updatedOrder.orderNumber,
+      })
+    } catch (pusherError) {
+      // Log error but don't fail the status update
+      console.error('Failed to send real-time status update:', pusherError)
+    }
 
     // Use mapper for consistent response format
     const mappedOrder = mapOrderToResponse(updatedOrder)

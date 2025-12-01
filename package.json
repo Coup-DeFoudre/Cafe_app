@@ -41,6 +41,8 @@
     "next-auth": "^4.24.0",
     "next-themes": "^0.3.0",
     "postcss": "^8.4.0",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.64.0",

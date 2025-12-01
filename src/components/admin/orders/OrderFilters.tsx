@@ -292,7 +292,7 @@ export function OrderFilters({ filters, onFilterChange, onReset }: OrderFiltersP
               {filters.search.trim() && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Search className="w-3 h-3" />
-                  "{filters.search}"
+                  &quot;{filters.search}&quot;
                   <button
                     onClick={() => removeFilter('search')}
                     className="ml-1 hover:bg-gray-200 rounded-full p-0.5"

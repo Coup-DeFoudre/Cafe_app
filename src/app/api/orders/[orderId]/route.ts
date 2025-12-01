@@ -19,6 +19,7 @@ export async function GET(
       include: {
         cafe: {
           select: {
+            id: true,
             name: true,
             logo: true,
             phone: true
@@ -60,6 +61,7 @@ export async function GET(
       total: order.total,
       createdAt: order.createdAt.toISOString(),
       cafe: {
+        id: order.cafe.id,
         name: order.cafe.name,
         logo: order.cafe.logo,
         phone: order.cafe.phone
