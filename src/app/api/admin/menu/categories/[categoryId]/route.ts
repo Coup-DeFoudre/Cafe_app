@@ -1,4 +1,7 @@
 import { NextRequest } from 'next/server'
+// Ensure Vercel build doesn't attempt to prerender this dynamic API route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { requireAdminSession } from '@/lib/auth'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers'
 import { MenuCategorySchema } from '@/lib/validations/menu'
