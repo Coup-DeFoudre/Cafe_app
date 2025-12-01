@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-config'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers'

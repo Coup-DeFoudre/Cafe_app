@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { requireAdminSession } from '@/lib/auth'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers'
 import { MenuItemSchema } from '@/lib/validations/menu'
