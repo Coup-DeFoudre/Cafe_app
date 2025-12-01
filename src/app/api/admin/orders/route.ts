@@ -1,4 +1,8 @@
 import { NextRequest } from 'next/server'
+// Force this API route to be fully dynamic to avoid static optimization
+// attempts that trigger dynamic server usage errors when accessing headers/session.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth-config'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers'

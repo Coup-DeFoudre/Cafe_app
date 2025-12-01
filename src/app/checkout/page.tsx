@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 import CheckoutPageClient from '@/components/customer/CheckoutPageClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: 'Checkout | Cafe App',
   description: 'Complete your order and provide delivery details',

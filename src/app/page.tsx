@@ -3,6 +3,9 @@ import HeroSection from '@/components/customer/HeroSection';
 import MenuBrowser from '@/components/customer/MenuBrowser';
 import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   try {
     // Fetch cafe data

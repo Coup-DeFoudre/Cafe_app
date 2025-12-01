@@ -1,4 +1,6 @@
 import { getServerSession } from 'next-auth/next'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth-config'
 import { getDashboardStats, getRecentOrders } from '@/lib/queries/dashboard'

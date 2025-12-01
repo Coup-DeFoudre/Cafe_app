@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
@@ -13,7 +13,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { toast } from 'sonner'
 import { Coffee, Loader2 } from 'lucide-react'
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -113,5 +113,20 @@ export default function AdminLoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
