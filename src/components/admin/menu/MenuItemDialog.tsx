@@ -52,6 +52,7 @@ export function MenuItemDialog({
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image || null)
+  const [fileInputKey, setFileInputKey] = useState(0)
   const isEdit = !!item
 
   const form = useForm<FormData>({
@@ -106,44 +107,61 @@ export function MenuItemDialog({
   const handleRemoveImage = () => {
     form.setValue('image', '')
     setImagePreview(null)
+    setFileInputKey(prev => prev + 1) // Reset file input
   }
 
   const onSubmit = (formData: FormData) => {
+    console.log('Form submitted with data:', formData)
+    
     startTransition(async () => {
       try {
+        // Clean up empty strings for optional fields
+        const cleanedData = {
+          ...formData,
+          image: formData.image || undefined,
+          description: formData.description || undefined,
+        }
+        
+        console.log('Cleaned data:', cleanedData)
+
         if (isEdit) {
           const response = await fetch(`/api/admin/menu/items/${item.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(cleanedData),
           })
 
           if (!response.ok) {
-            throw new Error('Failed to update item')
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to update item')
           }
 
           const { data: updatedItem } = (await response.json()) as { success: boolean; data: any };
           onSuccess(updatedItem)
+          toast.success('Menu item updated successfully')
         } else {
           const response = await fetch('/api/admin/menu/items', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(cleanedData),
           })
 
           if (!response.ok) {
-            throw new Error('Failed to create item')
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to create item')
           }
 
           const { data: newItem } = (await response.json()) as { success: boolean; data: any };
           onSuccess(newItem)
+          toast.success('Menu item created successfully')
         }
 
         form.reset()
         setImagePreview(null)
         onOpenChange(false)
       } catch (error) {
-        toast.error(isEdit ? 'Failed to update item' : 'Failed to create item')
+        console.error('Form submission error:', error)
+        toast.error(error instanceof Error ? error.message : (isEdit ? 'Failed to update item' : 'Failed to create item'))
       }
     })
   }
@@ -172,7 +190,16 @@ export function MenuItemDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form 
+            onSubmit={form.handleSubmit(
+              onSubmit,
+              (errors) => {
+                console.error('Form validation errors:', errors)
+                toast.error('Please fix the errors in the form')
+              }
+            )} 
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -268,13 +295,13 @@ export function MenuItemDialog({
                   <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors">
                   <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                   <div className="text-sm text-gray-600 mb-2">
                     Click to upload or drag and drop
@@ -283,15 +310,18 @@ export function MenuItemDialog({
                     PNG, JPG up to 5MB
                   </div>
                   <input
+                    key={fileInputKey}
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
+                      e.stopPropagation()
                       const file = e.target.files?.[0]
                       if (file) handleImageUpload(file)
                     }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="hidden"
+                    disabled={isUploading}
                   />
-                </div>
+                </label>
               )}
               {isUploading && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">

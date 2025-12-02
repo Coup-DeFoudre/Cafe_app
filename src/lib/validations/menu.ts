@@ -11,7 +11,7 @@ export const MenuItemSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
   price: z.number().min(0, 'Price must be 0 or greater'),
-  image: z.string().url('Invalid image URL').optional(),
+  image: z.union([z.string().url('Invalid image URL'), z.literal('')]).optional(),
   isAvailable: z.boolean().optional().default(true),
   isVeg: z.boolean().optional().default(true),
   customizations: z.record(z.any()).optional()
