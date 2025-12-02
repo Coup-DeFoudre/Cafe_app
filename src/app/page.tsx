@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import HeroSection from '@/components/customer/HeroSection';
 import MenuBrowser from '@/components/customer/MenuBrowser';
+import { BusinessHoursDisplay } from '@/components/customer/BusinessHoursDisplay';
 import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
@@ -114,9 +115,13 @@ export default async function Home() {
               <div>
                 <h3 className="font-semibold text-lg mb-4">Business Hours</h3>
                 {cafe.businessHours ? (
-                  <div className="text-muted-foreground">
-                    {JSON.stringify(cafe.businessHours)}
-                  </div>
+                  <BusinessHoursDisplay 
+                    businessHours={
+                      typeof cafe.businessHours === 'string' 
+                        ? JSON.parse(cafe.businessHours) 
+                        : cafe.businessHours
+                    } 
+                  />
                 ) : (
                   <p className="text-muted-foreground">
                     Open daily 9:00 AM - 9:00 PM
@@ -147,13 +152,91 @@ export default async function Home() {
     );
   } catch (error) {
     console.error('Error loading page:', error);
+
+    // If Prisma can't reach the database, render a static demo/fallback page
+    const msg = String((error as any)?.message ?? error)
+    const isDbError = msg.includes("Can't reach database server") ||
+      ((error as any)?.name === 'PrismaClientInitializationError' || (error as any)?.name === 'PrismaClientRustPanicError');
+
+    if (isDbError) {
+      const demoCafe = {
+        id: 'demo-cafe',
+        name: 'Sample Cafe (Demo)',
+        phone: null,
+        email: null,
+        address: null,
+        businessHours: null,
+        socialLinks: null,
+        logo: null,
+        bannerImage: null,
+        tagline: 'Demo mode — no database connected',
+        description: 'You are viewing a static demo because the local database is not available.' ,
+        settings: {
+          onlinePaymentEnabled: false
+        }
+      };
+
+      const demoCategories = [
+        {
+          id: 'c-1',
+          name: 'Hot Drinks',
+          menuItems: [
+            { id: 'i-1', name: 'Espresso', price: 2.5, isVeg: true, image: '' },
+            { id: 'i-2', name: 'Cappuccino', price: 3.5, isVeg: true, image: '' }
+          ],
+          order: 0,
+        },
+        {
+          id: 'c-2',
+          name: 'Bakery',
+          menuItems: [
+            { id: 'i-3', name: 'Croissant', price: 2.0, isVeg: true, image: '' }
+          ],
+          order: 1,
+        }
+      ];
+
+      const allItems = demoCategories.flatMap(category =>
+        category.menuItems.map(item => ({ ...item, category: { name: category.name } }))
+      );
+
+      const categoriesWithCount = demoCategories.map(cat => ({ ...cat, itemCount: cat.menuItems.length }));
+
+      return (
+        <div className="min-h-screen">
+          <div className="bg-yellow-50 border-b border-yellow-200 py-3 text-center">
+            <strong className="text-yellow-800">Demo mode:</strong> Local database not reachable — showing static fallback.
+          </div>
+
+          <HeroSection cafe={demoCafe} />
+
+          <section id="menu" className="py-16 bg-background">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">Our Menu (Demo)</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  This is a static demo menu to let the app run without a database.
+                </p>
+              </div>
+
+              <MenuBrowser categories={categoriesWithCount as any} items={allItems as any} />
+            </div>
+          </section>
+
+          <footer className="bg-muted py-12">
+            <div className="container mx-auto px-4">
+              <div className="text-center text-muted-foreground">Local demo — database connection required for full functionality.</div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Something went wrong</h1>
-          <p className="text-muted-foreground">
-            Please try again later or contact support if the problem persists.
-          </p>
+          <p className="text-muted-foreground">Please try again later or contact support if the problem persists.</p>
         </div>
       </div>
     );
