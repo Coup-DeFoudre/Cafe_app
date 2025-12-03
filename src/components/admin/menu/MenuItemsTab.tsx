@@ -103,7 +103,7 @@ function SortableMenuItem({
             )}
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline">
-                ${item.price.toFixed(2)}
+                ₹{item.price.toFixed(2)}
               </Badge>
               <Badge 
                 variant={item.isVeg ? "default" : "destructive"}
