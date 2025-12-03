@@ -50,7 +50,6 @@ export const pusherServer: Pusher | null = isPusherConfigured
       secret: requiredEnvVars.secret!,
       cluster: requiredEnvVars.cluster!,
       useTLS: true,
-      encrypted: true,
     })
   : null
 

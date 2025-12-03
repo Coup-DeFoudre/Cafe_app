@@ -172,7 +172,7 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
                     Remove Logo
                   </Button>
                 )}
-              }
+              </div>
             </div>
           ) : (
             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -247,7 +247,7 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
                     Remove Banner
                   </Button>
                 )}
-              }
+              </div>
             </div>
           ) : (
             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
