@@ -1,0 +1,25 @@
+# GitHub CODEOWNERS File
+# This file defines who must review and approve pull requests
+# 
+# Team Leader & Manager: @Coup-DeFoudre
+# All PRs require approval from the team leader before merging
+
+# Default owner for everything in the repo
+* @Coup-DeFoudre
+
+# Specific ownership rules (optional - can be customized later)
+
+# Database schema and migrations
+/prisma/** @Coup-DeFoudre
+
+# API routes
+/src/app/api/** @Coup-DeFoudre
+
+# Core configuration files
+*.config.* @Coup-DeFoudre
+package.json @Coup-DeFoudre
+tsconfig.json @Coup-DeFoudre
+.env.example @Coup-DeFoudre
+
+# GitHub workflows and CI/CD
+/.github/** @Coup-DeFoudre
