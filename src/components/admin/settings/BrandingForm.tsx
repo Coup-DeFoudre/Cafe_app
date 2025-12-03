@@ -47,6 +47,29 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
     })
   }
 
+  const handleLogoRemove = async () => {
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/admin/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'branding', logo: null }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to remove logo')
+        }
+
+        const { data } = await response.json()
+        logo.handleRemove()
+        onSuccess(data)
+        toast.success('Logo removed successfully')
+      } catch (error) {
+        toast.error('Failed to remove logo')
+      }
+    })
+  }
+
   const handleBannerUpload = async () => {
     startTransition(async () => {
       const url = await banner.uploadToCloudinary()
@@ -72,6 +95,29 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
     })
   }
 
+  const handleBannerRemove = async () => {
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/admin/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'branding', bannerImage: null }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to remove banner')
+        }
+
+        const { data } = await response.json()
+        banner.handleRemove()
+        onSuccess(data)
+        toast.success('Banner removed successfully')
+      } catch (error) {
+        toast.error('Failed to remove banner')
+      }
+    })
+  }
+
   return (
     <div className="space-y-8">
       {/* Logo Upload */}
@@ -92,31 +138,41 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
                   fill
                   className="object-contain"
                 />
-                {logo.file && (
-                  <button
-                    type="button"
-                    onClick={logo.handleRemove}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
               </div>
-              {logo.file && (
-                <Button
-                  onClick={handleLogoUpload}
-                  disabled={logo.isUploading || isPending}
-                >
-                  {logo.isUploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    'Upload Logo'
-                  )}
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {logo.file ? (
+                  <>
+                    <Button
+                      onClick={handleLogoUpload}
+                      disabled={logo.isUploading || isPending}
+                    >
+                      {logo.isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        'Save Logo'
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={logo.handleRemove}
+                      disabled={logo.isUploading || isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    onClick={handleLogoRemove}
+                    disabled={isPending}
+                  >
+                    Remove Logo
+                  </Button>
+                )}
+              }
             </div>
           ) : (
             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -157,31 +213,41 @@ export function BrandingForm({ cafe, onSuccess }: BrandingFormProps) {
                   fill
                   className="object-cover"
                 />
-                {banner.file && (
-                  <button
-                    type="button"
-                    onClick={banner.handleRemove}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
               </div>
-              {banner.file && (
-                <Button
-                  onClick={handleBannerUpload}
-                  disabled={banner.isUploading || isPending}
-                >
-                  {banner.isUploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    'Upload Banner'
-                  )}
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {banner.file ? (
+                  <>
+                    <Button
+                      onClick={handleBannerUpload}
+                      disabled={banner.isUploading || isPending}
+                    >
+                      {banner.isUploading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        'Save Banner'
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={banner.handleRemove}
+                      disabled={banner.isUploading || isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    onClick={handleBannerRemove}
+                    disabled={isPending}
+                  >
+                    Remove Banner
+                  </Button>
+                )}
+              }
             </div>
           ) : (
             <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
