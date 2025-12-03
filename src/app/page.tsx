@@ -132,8 +132,40 @@ export default async function Home() {
               <div>
                 <h3 className="font-semibold text-lg mb-4">Follow Us</h3>
                 {cafe.socialLinks ? (
-                  <div className="text-muted-foreground">
-                    {JSON.stringify(cafe.socialLinks)}
+                  <div className="space-y-3">
+                    {(() => {
+                      const links = typeof cafe.socialLinks === 'string' 
+                        ? JSON.parse(cafe.socialLinks) 
+                        : cafe.socialLinks;
+                      
+                      const platforms = [
+                        { key: 'instagram', name: 'Instagram', icon: '📷', color: 'hover:text-pink-500' },
+                        { key: 'facebook', name: 'Facebook', icon: '📘', color: 'hover:text-blue-600' },
+                        { key: 'x', name: 'X (Twitter)', icon: '🐦', color: 'hover:text-gray-800' },
+                        { key: 'twitter', name: 'Twitter', icon: '🐦', color: 'hover:text-blue-400' },
+                        { key: 'whatsapp', name: 'WhatsApp', icon: '💬', color: 'hover:text-green-500' },
+                        { key: 'website', name: 'Website', icon: '🌐', color: 'hover:text-blue-500' }
+                      ];
+                      
+                      return platforms.map(platform => {
+                        const url = links[platform.key];
+                        if (!url || url.trim() === '') return null;
+                        
+                        return (
+                          <div key={platform.key} className="flex items-center gap-3">
+                            <span className="text-xl">{platform.icon}</span>
+                            <a 
+                              href={url as string} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className={`text-muted-foreground ${platform.color} transition-colors font-medium text-sm`}
+                            >
+                              {platform.name}
+                            </a>
+                          </div>
+                        );
+                      }).filter(Boolean);
+                    })()} 
                   </div>
                 ) : (
                   <p className="text-muted-foreground">
