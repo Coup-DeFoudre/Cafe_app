@@ -11,42 +11,42 @@ import {
   Clock,
   CheckCircle,
   ChefHat,
-  Bell,
-  CircleCheck,
+  Package,
+  CheckCheck,
   XCircle,
 } from 'lucide-react'
 
 describe('Order Status Utilities', () => {
   
   describe('getOrderStatusColor', () => {
-    it('should return yellow for PENDING status', () => {
+    it('should return red for PENDING status', () => {
       const color = getOrderStatusColor(OrderStatus.PENDING)
-      expect(color).toBe('bg-yellow-100 text-yellow-800')
+      expect(color).toBe('bg-red-100 text-red-800 border-red-200')
     })
 
     it('should return blue for CONFIRMED status', () => {
       const color = getOrderStatusColor(OrderStatus.CONFIRMED)
-      expect(color).toBe('bg-blue-100 text-blue-800')
+      expect(color).toBe('bg-blue-100 text-blue-800 border-blue-200')
     })
 
     it('should return orange for PREPARING status', () => {
       const color = getOrderStatusColor(OrderStatus.PREPARING)
-      expect(color).toBe('bg-orange-100 text-orange-800')
+      expect(color).toBe('bg-orange-100 text-orange-800 border-orange-200')
     })
 
-    it('should return green for READY status', () => {
+    it('should return purple for READY status', () => {
       const color = getOrderStatusColor(OrderStatus.READY)
-      expect(color).toBe('bg-green-100 text-green-800')
+      expect(color).toBe('bg-purple-100 text-purple-800 border-purple-200')
     })
 
     it('should return green for COMPLETED status', () => {
       const color = getOrderStatusColor(OrderStatus.COMPLETED)
-      expect(color).toBe('bg-green-100 text-green-800')
+      expect(color).toBe('bg-green-100 text-green-800 border-green-200')
     })
 
-    it('should return red for CANCELLED status', () => {
+    it('should return gray for CANCELLED status', () => {
       const color = getOrderStatusColor(OrderStatus.CANCELLED)
-      expect(color).toBe('bg-red-100 text-red-800')
+      expect(color).toBe('bg-gray-100 text-gray-800 border-gray-200')
     })
   })
 
@@ -92,9 +92,9 @@ describe('Order Status Utilities', () => {
       expect(nextStatuses).toEqual([OrderStatus.READY, OrderStatus.CANCELLED])
     })
 
-    it('should return COMPLETED for READY status', () => {
+    it('should return COMPLETED and CANCELLED for READY status', () => {
       const nextStatuses = getNextOrderStatuses(OrderStatus.READY)
-      expect(nextStatuses).toEqual([OrderStatus.COMPLETED])
+      expect(nextStatuses).toEqual([OrderStatus.COMPLETED, OrderStatus.CANCELLED])
     })
 
     it('should return empty array for COMPLETED status', () => {
@@ -167,14 +167,14 @@ describe('Order Status Utilities', () => {
       expect(Icon).toBe(ChefHat)
     })
 
-    it('should return Bell icon for READY status', () => {
+    it('should return Package icon for READY status', () => {
       const Icon = getOrderStatusIcon(OrderStatus.READY)
-      expect(Icon).toBe(Bell)
+      expect(Icon).toBe(Package)
     })
 
-    it('should return CircleCheck icon for COMPLETED status', () => {
+    it('should return CheckCheck icon for COMPLETED status', () => {
       const Icon = getOrderStatusIcon(OrderStatus.COMPLETED)
-      expect(Icon).toBe(CircleCheck)
+      expect(Icon).toBe(CheckCheck)
     })
 
     it('should return XCircle icon for CANCELLED status', () => {
