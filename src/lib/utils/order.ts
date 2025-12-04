@@ -5,7 +5,7 @@ export function calculateSubtotal(items: CartItem[]): number {
 }
 
 export function calculateTax(subtotal: number, taxRate?: number): number {
-  const rate = taxRate ? taxRate / 100 : 0.18; // Default to 18% if not provided
+  const rate = taxRate !== undefined ? taxRate / 100 : 0.18; // Default to 18% if not provided
   return subtotal * rate;
 }
 
