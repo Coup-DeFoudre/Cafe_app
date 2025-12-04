@@ -48,6 +48,7 @@ export const SocialLinksSchema = z.object({
   facebook: z.string().url('Invalid URL').optional().or(z.literal('')),
   instagram: z.string().url('Invalid URL').optional().or(z.literal('')),
   twitter: z.string().url('Invalid URL').optional().or(z.literal('')),
+  x: z.string().url('Invalid URL').optional().or(z.literal('')),
   whatsapp: z.string().url('Invalid URL').optional().or(z.literal('')),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
 })

@@ -32,6 +32,7 @@ export function SocialLinksForm({ socialLinks, onSuccess }: SocialLinksFormProps
       facebook: socialLinks?.facebook || '',
       instagram: socialLinks?.instagram || '',
       twitter: socialLinks?.twitter || '',
+      x: socialLinks?.x || '',
       whatsapp: socialLinks?.whatsapp || '',
       website: socialLinks?.website || '',
     },
@@ -116,6 +117,27 @@ export function SocialLinksForm({ socialLinks, onSuccess }: SocialLinksFormProps
               <FormControl>
                 <Input
                   placeholder="https://twitter.com/yourcafe"
+                  {...field}
+                  value={field.value || ''}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="x"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2">
+                <Twitter className="w-4 h-4" />
+                X (formerly Twitter)
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://x.com/yourcafe"
                   {...field}
                   value={field.value || ''}
                 />
