@@ -20,3 +20,84 @@
 '📝 documentation':
   - changed-files:
     - any-glob-to-any-file: '*.md'
+# GitHub Labeler Configuration
+# Automatically labels PRs based on changed files
+
+# Frontend/UI Changes
+'🎨 frontend':
+  - 'src/components/**/*'
+  - 'src/app/**/page.tsx'
+  - 'src/app/**/layout.tsx'
+  - 'src/app/globals.css'
+  - 'tailwind.config.ts'
+  - 'components.json'
+
+# Backend/API Changes
+'⚙️ backend':
+  - 'src/app/api/**/*'
+  - 'src/lib/**/*'
+  - 'middleware.ts'
+
+# Database Changes
+'🗄️ database':
+  - 'prisma/**/*'
+
+# Type Definitions
+'📘 types':
+  - 'src/types/**/*'
+  - '**/*.d.ts'
+
+# Documentation
+'📝 docs':
+  - '**/*.md'
+  - 'README.md'
+
+# Configuration
+'🔧 config':
+  - '*.config.*'
+  - 'package.json'
+  - 'package-lock.json'
+  - 'tsconfig.json'
+  - '.eslintrc.json'
+  - '.env.example'
+
+# GitHub Actions/CI
+'🚀 ci-cd':
+  - '.github/**/*'
+
+# Dependencies
+'📦 dependencies':
+  - 'package.json'
+  - 'package-lock.json'
+
+# Customer-facing features
+'👥 customer':
+  - 'src/components/customer/**/*'
+  - 'src/app/customer/**/*'
+  - 'src/app/checkout/**/*'
+  - 'src/app/order-confirmation/**/*'
+
+# Admin features
+'👤 admin':
+  - 'src/components/admin/**/*'
+  - 'src/app/admin/**/*'
+  - 'src/app/api/admin/**/*'
+
+# Cart/Ordering
+'🛒 orders':
+  - 'src/contexts/CartContext.tsx'
+  - 'src/app/api/orders/**/*'
+  - 'src/components/customer/Cart*'
+  - 'src/components/customer/Checkout*'
+  - 'src/components/admin/orders/**/*'
+
+# Menu Management
+'🍽️ menu':
+  - 'src/app/api/admin/menu/**/*'
+  - 'src/components/admin/menu/**/*'
+  - 'src/components/customer/Menu*'
+
+# Settings
+'⚙️ settings':
+  - 'src/app/api/admin/settings/**/*'
+  - 'src/components/admin/settings/**/*'
