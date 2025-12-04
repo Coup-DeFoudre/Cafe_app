@@ -24,6 +24,7 @@ interface HomePageClientProps {
     email?: string | null;
     address?: string | null;
     businessHours?: any;
+    socialLinks?: any;
     themeColors?: any;
   };
   categories: any[];

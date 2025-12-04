@@ -1,6 +1,15 @@
 'use client';
 
-import { MapPin, Clock, Phone, Mail } from 'lucide-react';
+import { MapPin, Clock, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
+
+interface SocialLinks {
+  instagram?: string | null;
+  facebook?: string | null;
+  twitter?: string | null;
+  youtube?: string | null;
+  linkedin?: string | null;
+  website?: string | null;
+}
 
 interface FooterSectionProps {
   cafe: {
@@ -9,17 +18,25 @@ interface FooterSectionProps {
     email?: string | null;
     address?: string | null;
     businessHours?: any;
+    socialLinks?: SocialLinks | string | null;
   };
 }
 
 export default function FooterSection({ cafe }: FooterSectionProps) {
-  const { name, address, businessHours, phone, email } = cafe;
+  const { name, address, businessHours, phone, email, socialLinks } = cafe;
 
   // Parse business hours if needed
   const hours = businessHours
     ? typeof businessHours === 'string'
       ? JSON.parse(businessHours)
       : businessHours
+    : null;
+
+  // Parse social links if needed
+  const socials: SocialLinks | null = socialLinks
+    ? typeof socialLinks === 'string'
+      ? JSON.parse(socialLinks)
+      : socialLinks
     : null;
 
   // Get today's day name
@@ -125,6 +142,46 @@ export default function FooterSection({ cafe }: FooterSectionProps) {
             <p className="text-sm text-[#6B6B6B]">
               © {new Date().getFullYear()} {name}. All rights reserved.
             </p>
+            
+            {/* Social Links */}
+            {socials && (socials.instagram || socials.facebook || socials.twitter) && (
+              <div className="flex items-center gap-4">
+                {socials.instagram && (
+                  <a 
+                    href={socials.instagram} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#6B6B6B] hover:text-[#8B4513] transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {socials.facebook && (
+                  <a 
+                    href={socials.facebook} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#6B6B6B] hover:text-[#8B4513] transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
+                {socials.twitter && (
+                  <a 
+                    href={socials.twitter} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#6B6B6B] hover:text-[#8B4513] transition-colors"
+                    aria-label="Twitter"
+                  >
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-[#4A4A4A] hover:text-[#8B4513] transition-colors">
                 Privacy Policy
