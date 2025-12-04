@@ -80,12 +80,19 @@ describe('Checkout Form Validation - Comprehensive Tests', () => {
   })
 
   describe('Valid Scenarios - DELIVERY Orders', () => {
+    const validDeliveryLocation = {
+      lat: 12.9716,
+      lng: 77.5946,
+      mapLink: 'https://www.google.com/maps?q=12.9716,77.5946',
+    }
+
     it('should validate complete delivery order', () => {
       const validData = {
         customerName: 'John Doe',
         customerPhone: '+919876543210',
         orderType: OrderType.DELIVERY,
         deliveryAddress: '123 Main St, Apt 4B, City, State 12345',
+        deliveryLocation: validDeliveryLocation,
         specialInstructions: 'Ring the bell twice',
       }
       
@@ -102,6 +109,7 @@ describe('Checkout Form Validation - Comprehensive Tests', () => {
         customerPhone: '9876543210',
         orderType: OrderType.DELIVERY,
         deliveryAddress: '1234567890', // Exactly 10 characters
+        deliveryLocation: validDeliveryLocation,
       }
       
       const result = CheckoutFormSchema.safeParse(validData)
@@ -114,6 +122,7 @@ describe('Checkout Form Validation - Comprehensive Tests', () => {
         customerPhone: '9876543210',
         orderType: OrderType.DELIVERY,
         deliveryAddress: '123 Main Street, Apartment 4B, Near Central Park, Downtown Area, City Name, State 12345',
+        deliveryLocation: validDeliveryLocation,
       }
       
       const result = CheckoutFormSchema.safeParse(validData)
@@ -463,6 +472,11 @@ describe('Checkout Form Validation - Comprehensive Tests', () => {
         customerPhone: '1234567890',
         orderType: OrderType.DELIVERY,
         deliveryAddress: '456 Oak Avenue, Apartment 3C, Near City Mall, Downtown District, Cityville 54321',
+        deliveryLocation: {
+          lat: 40.7128,
+          lng: -74.0060,
+          mapLink: 'https://www.google.com/maps?q=40.7128,-74.0060',
+        },
         specialInstructions: 'Please call before delivery. Gate code is 1234. Leave at door if no answer.',
       }
       
