@@ -30,11 +30,6 @@ const formatTime = (time: string): string => {
 }
 
 export function BusinessHoursDisplay({ businessHours }: BusinessHoursDisplayProps) {
-  const isOpen = (day: string): boolean => {
-    const dayHours = businessHours[day]
-    return dayHours ? !dayHours.closed : false
-  }
-
   const getTodayIndex = (): number => {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
     return DAYS_ORDER.indexOf(today)
@@ -43,61 +38,35 @@ export function BusinessHoursDisplay({ businessHours }: BusinessHoursDisplayProp
   const todayIndex = getTodayIndex()
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {DAYS_ORDER.map((day, index) => {
-          const dayHours = businessHours[day]
-          if (!dayHours) return null
+    <div className="space-y-2">
+      {DAYS_ORDER.map((day, index) => {
+        const dayHours = businessHours[day]
+        if (!dayHours) return null
 
-          const isToday = index === todayIndex
-          const isClosed = dayHours.closed
+        const isToday = index === todayIndex
+        const isClosed = dayHours.closed
 
-          return (
-            <Card
-              key={day}
-              className={`p-4 transition-all duration-300 ${
-                isToday
-                  ? 'ring-2 ring-primary bg-primary/5 border-primary'
-                  : 'hover:shadow-md'
-              } ${isClosed ? 'bg-slate-50 dark:bg-slate-900' : ''}`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-base">{DAY_LABELS[day]}</h4>
-                      {isToday && (
-                        <Badge variant="default" className="text-xs">
-                          Today
-                        </Badge>
-                      )}
-                    </div>
-
-                    {isClosed ? (
-                      <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                        <XCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">Closed</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span className="text-sm font-medium">
-                            {formatTime(dayHours.open)} - {formatTime(dayHours.close)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )
-        })}
-      </div>
-
-
+        return (
+          <div
+            key={day}
+            className="flex justify-between items-center text-sm"
+          >
+            <span className={isToday ? 'font-bold' : 'text-muted-foreground'}>
+              {DAY_LABELS[day]}
+            </span>
+            {isClosed ? (
+              <span className="text-muted-foreground">Closed</span>
+            ) : (
+              <span 
+                className={isToday ? 'font-semibold' : 'text-muted-foreground'}
+                style={isToday ? { color: 'hsl(80, 20%, 45%)' } : {}}
+              >
+                {formatTime(dayHours.open)} - {formatTime(dayHours.close)}
+              </span>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

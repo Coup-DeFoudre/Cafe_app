@@ -28,7 +28,7 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
 
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-200 hover:scale-105 hover:shadow-lg",
+      "group overflow-hidden transition-all duration-300 hover:scale-[1.02] border-0 shadow-md hover:shadow-xl",
       !isAvailable && "opacity-60"
     )}>
       {/* Image Section */}
@@ -73,7 +73,7 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
             {description}
           </p>
         )}
-        <div className="text-xl font-bold text-primary">
+        <div className="text-2xl font-bold" style={{ color: 'hsl(12, 71%, 58%)' }}>
           {formatCurrency(price)}
         </div>
       </CardContent>
@@ -83,9 +83,10 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
         {isAvailable ? (
           <Button
             onClick={() => onAddToCart(item)}
-            className="w-full"
+            className="w-full bg-secondary hover:bg-secondary/90 text-white"
             size="sm"
           >
+            <Coffee className="w-4 h-4 mr-2" />
             Add to Cart
           </Button>
         ) : (

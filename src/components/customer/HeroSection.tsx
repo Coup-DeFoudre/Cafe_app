@@ -18,7 +18,7 @@ export default function HeroSection({ cafe }: HeroSectionProps) {
 
   return (
     <section className="relative min-h-[60vh] lg:min-h-[80vh] flex items-center justify-center overflow-hidden">
-      {/* Background */}
+      {/* Background - Video or Image */}
       {bannerImage ? (
         <div className="absolute inset-0">
           <Image
@@ -30,22 +30,22 @@ export default function HeroSection({ cafe }: HeroSectionProps) {
           />
         </div>
       ) : (
-        <div 
-          className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600"
-          style={
-            themeColors?.primary
-              ? {
-                  background: `linear-gradient(to bottom right, ${themeColors.primary}, ${
-                    themeColors.secondary || themeColors.primary
-                  })`,
-                }
-              : undefined
-          }
-        />
+        <>
+          {/* Video Background */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="https://res.cloudinary.com/demo/video/upload/v1689788825/coffee_pouring.mp4" type="video/mp4" />
+          </video>
+        </>
       )}
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" />
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
@@ -85,7 +85,7 @@ export default function HeroSection({ cafe }: HeroSectionProps) {
           <div className="pt-6">
             <a
               href="#menu"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold text-white bg-primary hover:bg-primary/90 rounded-full transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105"
             >
               View Menu
             </a>

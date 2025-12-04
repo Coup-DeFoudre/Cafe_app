@@ -90,7 +90,7 @@ export default async function Home() {
         </section>
 
         {/* Footer Section */}
-        <footer className="bg-muted py-12">
+        <footer className="py-12" style={{ backgroundColor: 'hsl(40, 30%, 94%)' }}>
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
               <div>
@@ -106,9 +106,22 @@ export default async function Home() {
                   </p>
                 )}
                 {cafe.address && (
-                  <p className="text-muted-foreground">
-                    Address: {cafe.address}
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-muted-foreground">
+                      Address: {cafe.address}
+                    </p>
+                    <div className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
+                      <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0, filter: 'grayscale(100%)' }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -158,7 +171,8 @@ export default async function Home() {
                               href={url as string} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className={`text-muted-foreground ${platform.color} transition-colors font-medium text-sm`}
+                              className="transition-colors font-medium text-sm"
+                              style={{ color: 'hsl(80, 20%, 45%)' }}
                             >
                               {platform.name}
                             </a>
