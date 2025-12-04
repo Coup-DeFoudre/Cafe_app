@@ -43,21 +43,31 @@ export async function POST(request: NextRequest) {
         select: { id: true, price: true }
       });
       
+      // Verify all items were found (consistent with order creation validation)
+      if (menuItems.length !== menuItemIds.length) {
+        return NextResponse.json(
+          { valid: false, error: 'One or more items in your cart are unavailable' },
+          { status: 200 }
+        );
+      }
+      
       const menuItemsMap = new Map(menuItems.map(item => [item.id, item.price]));
       
       // Calculate subtotal from DB prices
       let calculatedSubtotal = 0;
       for (const item of items) {
         const price = menuItemsMap.get(item.menuItemId);
-        if (price !== undefined) {
-          calculatedSubtotal += price * (item.quantity || 1);
+        if (price === undefined) {
+          // This shouldn't happen after the length check, but guard anyway
+          return NextResponse.json(
+            { valid: false, error: 'Invalid item in cart' },
+            { status: 200 }
+          );
         }
+        calculatedSubtotal += price * (item.quantity || 1);
       }
       
-      // Use calculated subtotal if we found all items
-      if (calculatedSubtotal > 0) {
-        subtotal = calculatedSubtotal;
-      }
+      subtotal = calculatedSubtotal;
     }
 
     // Find the coupon
