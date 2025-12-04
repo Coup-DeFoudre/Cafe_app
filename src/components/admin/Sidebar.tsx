@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
-import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Coffee } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Coffee, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +11,7 @@ const navigationItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
   { label: 'Menu', href: '/admin/menu', icon: UtensilsCrossed },
+  { label: 'Coupons', href: '/admin/coupons', icon: Tag },
   { label: 'Settings', href: '/admin/settings', icon: Settings }
 ]
 

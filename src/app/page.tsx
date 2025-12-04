@@ -1,11 +1,9 @@
 import { prisma } from '@/lib/prisma';
-import HeroSection from '@/components/customer/HeroSection';
-import MenuBrowser from '@/components/customer/MenuBrowser';
-import { BusinessHoursDisplay } from '@/components/customer/BusinessHoursDisplay';
+import HomePageClient from '@/components/customer/HomePageClient';
 import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Revalidate every 30 seconds - menu data doesn't change frequently
+export const revalidate = 30;
 
 export default async function Home() {
   try {
@@ -21,10 +19,10 @@ export default async function Home() {
 
     if (!cafe) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Cafe Not Found</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-4xl font-serif font-bold mb-4 text-[#2D2D2D]">Cafe Not Found</h1>
+            <p className="text-[#6B6B6B]">
               The cafe you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
           </div>
@@ -56,7 +54,7 @@ export default async function Home() {
     // Flatten all items for MenuBrowser
     const allItems = categories.flatMap(category =>
       category.menuItems.map(item => ({
-        ...item, // Include all original MenuItem properties
+        ...item,
         category: {
           name: category.name,
         },
@@ -70,131 +68,11 @@ export default async function Home() {
     }));
 
     return (
-      <div className="min-h-screen">
-        {/* Hero Section */}
-        <HeroSection cafe={cafe} />
-
-        {/* Menu Section */}
-        <section id="menu" className="py-16 bg-background">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Our Menu</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Discover our carefully crafted selection of beverages and snacks, 
-                made with the finest ingredients.
-              </p>
-            </div>
-
-            <MenuBrowser categories={categoriesWithCount} items={allItems} />
-          </div>
-        </section>
-
-        {/* Footer Section */}
-        <footer className="py-12" style={{ backgroundColor: 'hsl(40, 30%, 94%)' }}>
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-              <div>
-                <h3 className="font-semibold text-lg mb-4">Contact Us</h3>
-                {cafe.phone && (
-                  <p className="text-muted-foreground mb-2">
-                    Phone: {cafe.phone}
-                  </p>
-                )}
-                {cafe.email && (
-                  <p className="text-muted-foreground mb-2">
-                    Email: {cafe.email}
-                  </p>
-                )}
-                {cafe.address && (
-                  <div className="space-y-3">
-                    <p className="text-muted-foreground">
-                      Address: {cafe.address}
-                    </p>
-                    <div className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
-                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, filter: 'grayscale(100%)' }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-4">Business Hours</h3>
-                {cafe.businessHours ? (
-                  <BusinessHoursDisplay 
-                    businessHours={
-                      typeof cafe.businessHours === 'string' 
-                        ? JSON.parse(cafe.businessHours) 
-                        : cafe.businessHours
-                    } 
-                  />
-                ) : (
-                  <p className="text-muted-foreground">
-                    Open daily 9:00 AM - 9:00 PM
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-4">Follow Us</h3>
-                {cafe.socialLinks ? (
-                  <div className="space-y-3">
-                    {(() => {
-                      const links = typeof cafe.socialLinks === 'string' 
-                        ? JSON.parse(cafe.socialLinks) 
-                        : cafe.socialLinks;
-                      
-                      const platforms = [
-                        { key: 'instagram', name: 'Instagram', icon: '📷', color: 'hover:text-pink-500' },
-                        { key: 'facebook', name: 'Facebook', icon: '📘', color: 'hover:text-blue-600' },
-                        { key: 'x', name: 'X (Twitter)', icon: '🐦', color: 'hover:text-gray-800' },
-                        { key: 'twitter', name: 'Twitter', icon: '🐦', color: 'hover:text-blue-400' },
-                        { key: 'whatsapp', name: 'WhatsApp', icon: '💬', color: 'hover:text-green-500' },
-                        { key: 'website', name: 'Website', icon: '🌐', color: 'hover:text-blue-500' }
-                      ];
-                      
-                      return platforms.map(platform => {
-                        const url = links[platform.key];
-                        if (!url || url.trim() === '') return null;
-                        
-                        return (
-                          <div key={platform.key} className="flex items-center gap-3">
-                            <span className="text-xl">{platform.icon}</span>
-                            <a 
-                              href={url as string} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="transition-colors font-medium text-sm"
-                              style={{ color: 'hsl(80, 20%, 45%)' }}
-                            >
-                              {platform.name}
-                            </a>
-                          </div>
-                        );
-                      }).filter(Boolean);
-                    })()} 
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    Connect with us on social media
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-              <p>&copy; 2024 {cafe.name}. All rights reserved.</p>
-            </div>
-          </div>
-        </footer>
-      </div>
+      <HomePageClient 
+        cafe={cafe}
+        categories={categoriesWithCount}
+        items={allItems}
+      />
     );
   } catch (error) {
     console.error('Error loading page:', error);
@@ -207,16 +85,16 @@ export default async function Home() {
     if (isDbError) {
       const demoCafe = {
         id: 'demo-cafe',
-        name: 'Sample Cafe (Demo)',
+        name: 'Bean & Bloom',
         phone: null,
         email: null,
-        address: null,
+        address: '1224 Main Street, Anytown, USA',
         businessHours: null,
         socialLinks: null,
         logo: null,
         bannerImage: null,
-        tagline: 'Demo mode — no database connected',
-        description: 'You are viewing a static demo because the local database is not available.' ,
+        tagline: 'Fresh Brews. Cozy Moments. Blooming Flavors.',
+        description: 'At Bean & Bloom Cafe, every cup tells a story. We blend rich coffee beans with blooming natural flavors to create a warm, relaxing cafe experience.',
         settings: {
           onlinePaymentEnabled: false
         }
@@ -225,20 +103,41 @@ export default async function Home() {
       const demoCategories = [
         {
           id: 'c-1',
-          name: 'Hot Drinks',
+          name: 'Fresh Coffee',
+          description: 'Brewed to perfection',
           menuItems: [
-            { id: 'i-1', name: 'Espresso', price: 2.5, isVeg: true, image: '' },
-            { id: 'i-2', name: 'Cappuccino', price: 3.5, isVeg: true, image: '' }
+            { id: 'i-1', name: 'Caramel Latte', price: 129, isVeg: true, image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-1' },
+            { id: 'i-2', name: 'Cold Brew', price: 149, isVeg: true, image: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-1' }
           ],
           order: 0,
         },
         {
           id: 'c-2',
-          name: 'Bakery',
+          name: 'Snacks & Bites',
+          description: 'Light & delicious',
           menuItems: [
-            { id: 'i-3', name: 'Croissant', price: 2.0, isVeg: true, image: '' }
+            { id: 'i-3', name: 'Chocolate Muffin', price: 79, isVeg: true, image: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-2' },
+            { id: 'i-4', name: 'Margherita Pizza Slice', price: 99, isVeg: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-2' }
           ],
           order: 1,
+        },
+        {
+          id: 'c-3',
+          name: 'Desserts',
+          description: 'Sweet treats to enjoy',
+          menuItems: [
+            { id: 'i-5', name: 'Chocolate Brownie', price: 89, isVeg: true, image: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-3' }
+          ],
+          order: 2,
+        },
+        {
+          id: 'c-4',
+          name: 'Fresh Juices',
+          description: 'Healthy & refreshing',
+          menuItems: [
+            { id: 'i-6', name: 'Orange Juice', price: 69, isVeg: true, image: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=400&fit=crop', isAvailable: true, categoryId: 'c-4' }
+          ],
+          order: 3,
         }
       ];
 
@@ -249,40 +148,24 @@ export default async function Home() {
       const categoriesWithCount = demoCategories.map(cat => ({ ...cat, itemCount: cat.menuItems.length }));
 
       return (
-        <div className="min-h-screen">
-          <div className="bg-yellow-50 border-b border-yellow-200 py-3 text-center">
-            <strong className="text-yellow-800">Demo mode:</strong> Local database not reachable — showing static fallback.
+        <div className="min-h-screen bg-[#FAF7F2]">
+          <div className="bg-amber-50 border-b border-amber-200 py-3 text-center">
+            <strong className="text-amber-800">Demo mode:</strong> Local database not reachable — showing static fallback.
           </div>
-
-          <HeroSection cafe={demoCafe} />
-
-          <section id="menu" className="py-16 bg-background">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold mb-4">Our Menu (Demo)</h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                  This is a static demo menu to let the app run without a database.
-                </p>
-              </div>
-
-              <MenuBrowser categories={categoriesWithCount as any} items={allItems as any} />
-            </div>
-          </section>
-
-          <footer className="bg-muted py-12">
-            <div className="container mx-auto px-4">
-              <div className="text-center text-muted-foreground">Local demo — database connection required for full functionality.</div>
-            </div>
-          </footer>
+          <HomePageClient 
+            cafe={demoCafe}
+            categories={categoriesWithCount as any}
+            items={allItems as any}
+          />
         </div>
       );
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Something went wrong</h1>
-          <p className="text-muted-foreground">Please try again later or contact support if the problem persists.</p>
+          <h1 className="text-4xl font-serif font-bold mb-4 text-[#2D2D2D]">Something went wrong</h1>
+          <p className="text-[#6B6B6B]">Please try again later or contact support if the problem persists.</p>
         </div>
       </div>
     );

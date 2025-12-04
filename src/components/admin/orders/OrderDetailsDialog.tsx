@@ -101,9 +101,23 @@ export function OrderDetailsDialog({
                 )}
               </div>
               {order.deliveryAddress && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <span className="text-sm">{order.deliveryAddress}</span>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                    <span className="text-sm">{order.deliveryAddress}</span>
+                  </div>
+                  {order.deliveryLatitude && order.deliveryLongitude && (
+                    <div className="ml-6">
+                      <a
+                        href={`https://www.google.com/maps?q=${order.deliveryLatitude},${order.deliveryLongitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline hover:text-blue-700"
+                      >
+                        📍 View Delivery Location on Map
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -200,6 +214,14 @@ export function OrderDetailsDialog({
                   <div className="flex items-center justify-between">
                     <span>Delivery Charge:</span>
                     <span>{formatCurrency(order.deliveryCharge)}</span>
+                  </div>
+                )}
+                {order.discount > 0 && (
+                  <div className="flex items-center justify-between text-green-600">
+                    <span>
+                      Discount{order.couponCode && ` (${order.couponCode})`}:
+                    </span>
+                    <span>-{formatCurrency(order.discount)}</span>
                   </div>
                 )}
                 <Separator />

@@ -9,6 +9,7 @@ interface CartContextType {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
+  isHydrated: boolean;
   addItem: (item: MenuItemWithCategory) => void;
   removeItem: (menuItemId: string) => void;
   updateQuantity: (menuItemId: string, quantity: number) => void;
@@ -28,6 +29,7 @@ interface CartProviderProps {
 export function CartProvider({ children, cafeKey }: CartProviderProps) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Generate storage key dynamically
   const storageKey = `cafe-cart-${cafeKey || DEFAULT_CAFE_SLUG}`;
@@ -52,12 +54,15 @@ export function CartProvider({ children, cafeKey }: CartProviderProps) {
         console.error('Failed to parse cart from localStorage:', error);
       }
     }
+    setIsHydrated(true);
   }, [storageKey]);
 
-  // Sync cart state with localStorage on changes
+  // Sync cart state with localStorage on changes (only after hydration)
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(items));
-  }, [items, storageKey]);
+    if (isHydrated) {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    }
+  }, [items, storageKey, isHydrated]);
 
   const addItem = (item: MenuItemWithCategory) => {
     setItems(currentItems => {
@@ -121,6 +126,7 @@ export function CartProvider({ children, cafeKey }: CartProviderProps) {
     items,
     itemCount,
     subtotal,
+    isHydrated,
     addItem,
     removeItem,
     updateQuantity,

@@ -28,7 +28,7 @@ export default function CartSheet() {
     isOpen, 
     closeCart, 
     updateQuantity, 
-    removeItem 
+    removeItem,
   } = useCart();
 
   const handleProceedToCheckout = () => {
@@ -38,7 +38,7 @@ export default function CartSheet() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
-      <SheetContent side="right" className="w-full sm:max-w-lg">
+      <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
           <SheetTitle>Your Cart</SheetTitle>
           <SheetDescription className="sr-only">
@@ -151,7 +151,7 @@ export default function CartSheet() {
                 <span className="font-medium">{formatCurrency(subtotal)}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Tax and delivery charges will be calculated at checkout
+                Apply promo code at checkout
               </p>
             </div>
 

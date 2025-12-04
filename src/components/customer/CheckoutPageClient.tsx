@@ -16,24 +16,44 @@ import OnlinePaymentForm from '@/components/customer/OnlinePaymentForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+interface AppliedCoupon {
+  id: string;
+  code: string;
+  description?: string | null;
+  discountType: string;
+  discountValue: number;
+  discountAmount: number;
+}
+
 interface CheckoutPageClientProps {
   cafeSettings: any;
 }
 
 export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientProps) {
   const router = useRouter();
-  const { items, clearCart } = useCart();
+  const { items, clearCart, isHydrated } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment'>('details');
   const [validatedCheckoutData, setValidatedCheckoutData] = useState<CheckoutFormData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>();
   const [orderType, setOrderType] = useState<OrderType>(OrderType.DINE_IN);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   // Calculate order totals
   const subtotal = calculateSubtotal(items);
+  const discountAmount = appliedCoupon?.discountAmount || 0;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
   const deliveryCharge = validatedCheckoutData?.orderType === OrderType.DELIVERY ? (cafeSettings.deliveryCharge || 0) : 0;
-  const tax = cafeSettings.taxEnabled ? calculateTax(subtotal, cafeSettings.taxRate) : 0;
-  const total = calculateTotal(subtotal, tax, deliveryCharge);
+  const tax = cafeSettings.taxEnabled ? calculateTax(discountedSubtotal, cafeSettings.taxRate) : 0;
+  const total = calculateTotal(discountedSubtotal, tax, deliveryCharge);
+
+  const handleCouponApply = (coupon: AppliedCoupon) => {
+    setAppliedCoupon(coupon);
+  };
+
+  const handleCouponRemove = () => {
+    setAppliedCoupon(null);
+  };
 
   const handleCheckoutFormSubmit = async (data: CheckoutFormData) => {
     setValidatedCheckoutData(data);
@@ -80,9 +100,15 @@ export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientP
         subtotal,
         tax,
         total,
+        discount: discountAmount,
         deliveryCharge,
+        couponCode: appliedCoupon?.code,
         ...(validatedCheckoutData.orderType === OrderType.DINE_IN && { tableNumber: validatedCheckoutData.tableNumber }),
-        ...(validatedCheckoutData.orderType === OrderType.DELIVERY && { deliveryAddress: validatedCheckoutData.deliveryAddress }),
+        ...(validatedCheckoutData.orderType === OrderType.DELIVERY && { 
+          deliveryAddress: validatedCheckoutData.deliveryAddress,
+          deliveryLatitude: validatedCheckoutData.deliveryLocation?.lat,
+          deliveryLongitude: validatedCheckoutData.deliveryLocation?.lng,
+        }),
         cafeSlug: DEFAULT_CAFE_SLUG
       };
 
@@ -124,7 +150,19 @@ export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientP
     router.back();
   };
 
-  // Redirect if cart is empty
+  // Wait for cart to hydrate before checking if empty
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect if cart is empty (only after hydration)
   if (items.length === 0) {
     router.push('/');
     return null;
@@ -167,6 +205,9 @@ export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientP
               <CheckoutSummary 
                 cafeSettings={cafeSettings}
                 orderType={orderType}
+                appliedCoupon={appliedCoupon}
+                onCouponApply={handleCouponApply}
+                onCouponRemove={handleCouponRemove}
               />
             </div>
           </div>
@@ -205,6 +246,9 @@ export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientP
               <CheckoutSummary 
                 cafeSettings={cafeSettings}
                 orderType={validatedCheckoutData?.orderType || orderType}
+                appliedCoupon={appliedCoupon}
+                onCouponApply={handleCouponApply}
+                onCouponRemove={handleCouponRemove}
               />
               
               {validatedCheckoutData && (
@@ -222,6 +266,23 @@ export default function CheckoutPageClient({ cafeSettings }: CheckoutPageClientP
                     <div>
                       <span className="font-medium">Order Type:</span> {validatedCheckoutData.orderType.replace('_', ' ')}
                     </div>
+                    {validatedCheckoutData.orderType === OrderType.DELIVERY && validatedCheckoutData.deliveryAddress && (
+                      <div>
+                        <span className="font-medium">Delivery Address:</span> {validatedCheckoutData.deliveryAddress}
+                      </div>
+                    )}
+                    {validatedCheckoutData.orderType === OrderType.DELIVERY && validatedCheckoutData.deliveryLocation && (
+                      <div>
+                        <a 
+                          href={validatedCheckoutData.deliveryLocation.mapLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm"
+                        >
+                          📍 View Location on Map
+                        </a>
+                      </div>
+                    )}
                     {validatedCheckoutData.specialInstructions && (
                       <div>
                         <span className="font-medium">Special Instructions:</span> {validatedCheckoutData.specialInstructions}

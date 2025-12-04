@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-helpers';
+
+// Cache menu data for 30 seconds
+export const revalidate = 30;
 
 export async function GET(
   request: NextRequest,

@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 import CheckoutPageClient from '@/components/customer/CheckoutPageClient';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache settings for 60 seconds - they don't change frequently
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Checkout | Cafe App',

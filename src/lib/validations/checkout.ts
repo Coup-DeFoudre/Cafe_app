@@ -9,6 +9,11 @@ export const CheckoutFormSchema = z.object({
   orderType: z.nativeEnum(OrderType),
   tableNumber: z.string().optional(),
   deliveryAddress: z.string().optional(),
+  deliveryLocation: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    mapLink: z.string(),
+  }).optional(),
   specialInstructions: z.string().max(500, 'Special instructions must be less than 500 characters').optional(),
 }).refine(d => d.orderType !== OrderType.DINE_IN || !!d.tableNumber, { 
   message: 'Table number is required for dine-in orders', 
@@ -16,6 +21,9 @@ export const CheckoutFormSchema = z.object({
 }).refine(d => d.orderType !== OrderType.DELIVERY || (!!d.deliveryAddress && d.deliveryAddress.length >= 10), { 
   message: 'Delivery address is required for delivery orders', 
   path: ['deliveryAddress'] 
+}).refine(d => d.orderType !== OrderType.DELIVERY || !!d.deliveryLocation, {
+  message: 'Please pin your delivery location on the map',
+  path: ['deliveryLocation']
 });
 
 export type CheckoutFormData = z.infer<typeof CheckoutFormSchema>;

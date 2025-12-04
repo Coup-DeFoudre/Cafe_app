@@ -21,13 +21,13 @@ export default function CategoryFilter({
 }: CategoryFilterProps) {
   return (
     <Tabs value={selectedCategory} onValueChange={onCategoryChange} className="w-full">
-      <TabsList className="flex w-full gap-3 overflow-x-auto lg:flex-wrap lg:h-auto bg-transparent p-0">
+      <TabsList className="flex w-full gap-2 md:gap-3 overflow-x-auto lg:flex-wrap lg:h-auto bg-transparent p-0">
         <TabsTrigger 
           value="all" 
-          className="flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-2 data-[state=active]:bg-secondary data-[state=active]:text-white border border-border data-[state=active]:border-secondary transition-all"
+          className="flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm data-[state=active]:bg-[#3D3D3D] data-[state=active]:text-white border border-[#E8E4DC] data-[state=active]:border-[#3D3D3D] transition-all bg-white hover:bg-[#F5F1EA]"
         >
           All
-          <Badge variant="secondary" className="text-xs bg-white/20">
+          <Badge variant="secondary" className="text-xs bg-[#F5F1EA] text-[#6B6B6B] data-[state=active]:bg-white/20 data-[state=active]:text-white">
             {categories.reduce((sum, cat) => sum + (cat.itemCount || 0), 0)}
           </Badge>
         </TabsTrigger>
@@ -36,11 +36,11 @@ export default function CategoryFilter({
           <TabsTrigger 
             key={category.id} 
             value={category.id}
-            className="flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-2 data-[state=active]:bg-secondary data-[state=active]:text-white border border-border data-[state=active]:border-secondary transition-all"
+            className="flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm data-[state=active]:bg-[#3D3D3D] data-[state=active]:text-white border border-[#E8E4DC] data-[state=active]:border-[#3D3D3D] transition-all bg-white hover:bg-[#F5F1EA]"
           >
             {category.name}
             {category.itemCount !== undefined && (
-              <Badge variant="secondary" className="text-xs bg-white/20">
+              <Badge variant="secondary" className="text-xs bg-[#F5F1EA] text-[#6B6B6B]">
                 {category.itemCount}
               </Badge>
             )}

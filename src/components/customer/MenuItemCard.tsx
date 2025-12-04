@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Coffee } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,11 +28,11 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
 
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-300 hover:scale-[1.02] border-0 shadow-md hover:shadow-xl",
+      "group overflow-hidden transition-all duration-300 hover:scale-[1.02] border-0 shadow-md hover:shadow-xl bg-white rounded-2xl",
       !isAvailable && "opacity-60"
     )}>
       {/* Image Section */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#F5F1EA]">
         <Image
           src={image || PLACEHOLDER_IMAGES.menuItem}
           alt={name}
@@ -67,13 +67,13 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
 
       {/* Content Section */}
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg line-clamp-1 mb-2">{name}</h3>
+        <h3 className="font-semibold text-lg line-clamp-1 mb-2 text-[#2D2D2D]">{name}</h3>
         {description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+          <p className="text-sm text-[#6B6B6B] line-clamp-2 mb-3">
             {description}
           </p>
         )}
-        <div className="text-2xl font-bold" style={{ color: 'hsl(12, 71%, 58%)' }}>
+        <div className="text-2xl font-bold text-[#8B4513]">
           {formatCurrency(price)}
         </div>
       </CardContent>
@@ -83,16 +83,16 @@ export default function MenuItemCard({ item, onAddToCart }: MenuItemCardProps) {
         {isAvailable ? (
           <Button
             onClick={() => onAddToCart(item)}
-            className="w-full bg-secondary hover:bg-secondary/90 text-white"
+            className="w-full bg-[#3D3D3D] hover:bg-[#2D2D2D] text-white rounded-full"
             size="sm"
           >
-            <Coffee className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-2" />
             Add to Cart
           </Button>
         ) : (
           <Button
             disabled
-            className="w-full"
+            className="w-full rounded-full"
             size="sm"
             variant="secondary"
           >

@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef, useImperativeHandle } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
@@ -11,7 +12,11 @@ import MenuGrid from './MenuGrid';
 import CartButton from './CartButton';
 import type { MenuBrowserProps, MenuItemWithCategory } from '@/types/menu';
 
-export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
+export interface MenuBrowserRef {
+  setCategory: (categoryId: string) => void;
+}
+
+const MenuBrowser = forwardRef<MenuBrowserRef, MenuBrowserProps>(({ categories, items }, ref) => {
   const { addItem } = useCart();
   
   // Add item count to categories
@@ -32,6 +37,13 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
     resetFilters,
   } = useMenuFilters({ items });
 
+  // Expose the setSelectedCategory method to parent components
+  useImperativeHandle(ref, () => ({
+    setCategory: (categoryId: string) => {
+      setSelectedCategory(categoryId);
+    }
+  }));
+
   const handleAddToCart = (item: MenuItemWithCategory) => {
     addItem(item);
     
@@ -45,8 +57,8 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
   return (
     <div className="space-y-8">
       {/* Filter Controls Section */}
-      <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-border py-4">
-        <div className="container mx-auto px-4 space-y-4">
+      <div className="sticky top-16 md:top-20 z-10 bg-[#FAF7F2] shadow-sm border-b border-[#E8E4DC] py-4 -mx-4 px-4 md:-mx-0 md:px-0 md:rounded-2xl md:bg-white md:border md:shadow-sm">
+        <div className="container mx-auto px-0 md:px-6 space-y-4">
           {/* Search Bar */}
           <div className="flex justify-center">
             <SearchBar
@@ -77,7 +89,7 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
           {/* Active Filters and Clear Button */}
           {hasActiveFilters && (
             <div className="flex items-center justify-between py-2">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-[#6B6B6B]">
                 {searchQuery && `Search: "${searchQuery}"`}
                 {searchQuery && (selectedCategory !== 'all' || vegFilter !== 'all') && ' • '}
                 {selectedCategory !== 'all' && `Category: ${categoriesWithCount.find(c => c.id === selectedCategory)?.name}`}
@@ -88,6 +100,7 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
                 variant="outline"
                 size="sm"
                 onClick={resetFilters}
+                className="rounded-full border-[#3D3D3D] text-[#3D3D3D] hover:bg-[#3D3D3D] hover:text-white"
               >
                 Clear Filters
               </Button>
@@ -100,7 +113,7 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
       <div className="space-y-6">
         {/* Item Count */}
         <div className="text-center">
-          <p className="text-lg font-medium">
+          <p className="text-lg font-medium text-[#2D2D2D]">
             Showing {itemCount} item{itemCount !== 1 ? 's' : ''}
           </p>
         </div>
@@ -117,4 +130,8 @@ export default function MenuBrowser({ categories, items }: MenuBrowserProps) {
       <CartButton />
     </div>
   );
-}
+});
+
+MenuBrowser.displayName = 'MenuBrowser';
+
+export default MenuBrowser;

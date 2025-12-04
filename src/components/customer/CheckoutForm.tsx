@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import LocationPicker from './LocationPicker';
 
 interface CheckoutFormProps {
   onSubmit: (data: CheckoutFormData) => Promise<void>;
@@ -36,6 +37,8 @@ export default function CheckoutForm({
   cafeSettings,
   orderType
 }: CheckoutFormProps) {
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(CheckoutFormSchema),
     defaultValues: {
@@ -48,10 +51,17 @@ export default function CheckoutForm({
 
   const watchOrderType = form.watch('orderType');
 
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+    const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
+    form.setValue('deliveryLocation', { lat, lng, mapLink });
+  };
+
   const handleSubmit = async (data: CheckoutFormData) => {
-    // If order type is DINE_IN, remove deliveryAddress
+    // If order type is DINE_IN, remove delivery-related fields
     if (data.orderType === OrderType.DINE_IN) {
       delete data.deliveryAddress;
+      delete data.deliveryLocation;
     }
     // If order type is DELIVERY, remove tableNumber
     if (data.orderType === OrderType.DELIVERY) {
@@ -169,27 +179,46 @@ export default function CheckoutForm({
                 />
               )}
 
-              {/* Delivery Address - Only show for DELIVERY */}
+              {/* Delivery Address & Location - Only show for DELIVERY */}
               {watchOrderType === OrderType.DELIVERY && (
-                <FormField
-                  control={form.control}
-                  name="deliveryAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Delivery Address</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter your complete delivery address..." 
-                          className="resize-none" 
-                          rows={3}
-                          {...field} 
-                          disabled={isLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <>
+                  <FormField
+                    control={form.control}
+                    name="deliveryAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Address</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Enter your complete delivery address (House/Flat No, Street, Landmark)..." 
+                            className="resize-none" 
+                            rows={3}
+                            {...field} 
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="deliveryLocation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <LocationPicker
+                            onLocationSelect={handleLocationSelect}
+                            initialLat={selectedLocation?.lat}
+                            initialLng={selectedLocation?.lng}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               )}
             </div>
 

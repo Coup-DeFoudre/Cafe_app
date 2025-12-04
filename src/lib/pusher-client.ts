@@ -34,6 +34,12 @@ export const pusherClient: Pusher | null = key && cluster
       forceTLS: true,
       enabledTransports: ['ws', 'wss'],
       disabledTransports: ['sockjs', 'xhr_polling', 'xhr_streaming'],
+      authEndpoint: '/api/pusher/auth',
+      auth: {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
     })
   : null
 

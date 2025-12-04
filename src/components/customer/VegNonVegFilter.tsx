@@ -30,7 +30,12 @@ export default function VegNonVegFilter({ value, onChange }: VegNonVegFilterProp
           variant={value === option.value ? "default" : "outline"}
           size="sm"
           onClick={() => onChange(option.value)}
-          className="flex items-center gap-2 flex-1 lg:flex-none"
+          className={cn(
+            "flex items-center gap-2 flex-1 lg:flex-none rounded-full px-4 transition-all",
+            value === option.value 
+              ? "bg-[#3D3D3D] hover:bg-[#2D2D2D] text-white border-[#3D3D3D]" 
+              : "bg-white hover:bg-[#F5F1EA] text-[#4A4A4A] border-[#E8E4DC]"
+          )}
         >
           {option.color && (
             <div 

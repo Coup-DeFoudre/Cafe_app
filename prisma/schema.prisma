@@ -57,6 +57,7 @@ model Cafe {
   customers      Customer[]
   settings       Settings?
   admins         Admin[]
+  coupons        Coupon[]
 
   @@map("cafes")
 }
@@ -111,11 +112,14 @@ model Order {
   orderType            OrderType
   tableNumber          String?
   deliveryAddress      String?
+  deliveryLatitude     Float?
+  deliveryLongitude    Float?
   items                Json
   subtotal             Float
   tax                  Float          @default(0)
   deliveryCharge       Float          @default(0)
   discount             Float          @default(0)
+  couponCode           String?
   total                Float
   paymentMethod        PaymentMethod
   paymentStatus        PaymentStatus  @default(PENDING)
@@ -207,5 +211,29 @@ model Admin {
 
   @@index([cafeId])
   @@map("admins")
+}
+
+model Coupon {
+  id              String    @id @default(cuid())
+  cafeId          String
+  code            String
+  description     String?
+  discountType    String    @default("PERCENTAGE") // PERCENTAGE or FIXED
+  discountValue   Float     // Percentage (0-100) or fixed amount
+  minOrderValue   Float     @default(0)
+  maxDiscount     Float?    // Maximum discount amount (for percentage type)
+  usageLimit      Int?      // Total number of times coupon can be used
+  usedCount       Int       @default(0)
+  isActive        Boolean   @default(true)
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  cafe Cafe @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@unique([cafeId, code])
+  @@index([cafeId, isActive])
+  @@map("coupons")
 }
 

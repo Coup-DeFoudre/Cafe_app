@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes"
 import { Toaster as SonnerToaster } from "sonner"
 import { CartProvider } from "@/contexts/CartContext"
 import CartSheet from "@/components/customer/CartSheet"
+import { Suspense } from "react"
+import { NavigationProgress } from "@/components/ui/navigation-progress"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora" })
@@ -28,6 +30,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           <CartProvider>
             {children}
             <CartSheet />

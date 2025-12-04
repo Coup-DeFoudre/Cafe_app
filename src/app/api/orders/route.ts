@@ -19,14 +19,18 @@ export async function POST(request: NextRequest) {
       orderType,
       tableNumber,
       deliveryAddress,
+      deliveryLatitude,
+      deliveryLongitude,
       specialInstructions,
       items,
       subtotal,
       tax,
       deliveryCharge,
+      discount,
       total,
       paymentMethod,
-      paymentReferenceId
+      paymentReferenceId,
+      couponCode
     } = body;
 
     // Basic validation
@@ -85,15 +89,75 @@ export async function POST(request: NextRequest) {
       calculatedSubtotal += menuItem.price * item.quantity;
     }
 
-    const calculatedTax = cafe.settings?.taxEnabled ? calculateTax(calculatedSubtotal, cafe.settings.taxRate) : 0;
     const calculatedDeliveryCharge = orderType === OrderType.DELIVERY ? (cafe.settings?.deliveryCharge || 0) : 0;
-    const calculatedTotal = calculateTotal(calculatedSubtotal, calculatedTax, calculatedDeliveryCharge);
+    
+    // Validate discount if coupon is applied (must be done before tax calculation)
+    let validatedDiscount = 0;
+    if (couponCode && discount > 0) {
+      const coupon = await prisma.coupon.findFirst({
+        where: {
+          cafeId: cafe.id,
+          code: couponCode,
+          isActive: true,
+          OR: [
+            { validUntil: null },
+            { validUntil: { gt: new Date() } }
+          ]
+        }
+      });
 
-    // Allow small rounding differences (within 1 unit)
-    if (Math.abs(calculatedSubtotal - subtotal) > 1 || 
-        Math.abs(calculatedTax - tax) > 1 || 
-        Math.abs(calculatedDeliveryCharge - deliveryCharge) > 1 ||
-        Math.abs(calculatedTotal - total) > 1) {
+      if (!coupon) {
+        return errorResponse('Invalid or expired coupon', 400);
+      }
+
+      // Check minimum order value
+      if (coupon.minOrderValue && calculatedSubtotal < coupon.minOrderValue) {
+        return errorResponse(`Minimum order value of ${coupon.minOrderValue} required for this coupon`, 400);
+      }
+
+      // Check usage limit
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+        return errorResponse('Coupon usage limit exceeded', 400);
+      }
+
+      // Calculate discount based on type (discount is applied to subtotal)
+      let discountAmount: number;
+      if (coupon.discountType === 'FIXED') {
+        discountAmount = coupon.discountValue;
+      } else {
+        // PERCENTAGE - applied to subtotal
+        discountAmount = (calculatedSubtotal * coupon.discountValue) / 100;
+      }
+      
+      // Apply max discount cap if set
+      validatedDiscount = coupon.maxDiscount 
+        ? Math.min(discountAmount, coupon.maxDiscount)
+        : discountAmount;
+
+      // Ensure discount doesn't exceed subtotal
+      validatedDiscount = Math.min(validatedDiscount, calculatedSubtotal);
+
+      // Update coupon usage count
+      await prisma.coupon.update({
+        where: { id: coupon.id },
+        data: { usedCount: { increment: 1 } }
+      });
+    }
+
+    // Calculate discounted subtotal (discount is applied BEFORE tax)
+    const discountedSubtotal = Math.max(0, calculatedSubtotal - validatedDiscount);
+    
+    // Calculate tax on DISCOUNTED subtotal (matching frontend logic)
+    const calculatedTax = cafe.settings?.taxEnabled ? calculateTax(discountedSubtotal, cafe.settings.taxRate) : 0;
+    
+    // Calculate total: discounted subtotal + tax + delivery
+    const calculatedTotal = calculateTotal(discountedSubtotal, calculatedTax, calculatedDeliveryCharge);
+
+    // Allow small rounding differences (within 5 units to account for floating point issues)
+    if (Math.abs(calculatedSubtotal - subtotal) > 5 || 
+        Math.abs(calculatedTax - tax) > 5 || 
+        Math.abs(calculatedDeliveryCharge - deliveryCharge) > 5 ||
+        Math.abs(calculatedTotal - total) > 5) {
       return errorResponse('Order calculations do not match', 400);
     }
 
@@ -135,6 +199,8 @@ export async function POST(request: NextRequest) {
           orderType,
           tableNumber: orderType === OrderType.DINE_IN ? tableNumber : null,
           deliveryAddress: orderType === OrderType.DELIVERY ? deliveryAddress : null,
+          deliveryLatitude: orderType === OrderType.DELIVERY ? deliveryLatitude : null,
+          deliveryLongitude: orderType === OrderType.DELIVERY ? deliveryLongitude : null,
           specialInstructions: specialInstructions || null,
           status: OrderStatus.PENDING,
           paymentMethod,
@@ -151,6 +217,8 @@ export async function POST(request: NextRequest) {
           subtotal: calculatedSubtotal,
           tax: calculatedTax,
           deliveryCharge: calculatedDeliveryCharge,
+          discount: validatedDiscount,
+          couponCode: couponCode || null,
           total: calculatedTotal
         }
       });

@@ -9,6 +9,8 @@ export interface OrderEntity {
   orderType: OrderType
   tableNumber: string | null
   deliveryAddress: string | null
+  deliveryLatitude: number | null
+  deliveryLongitude: number | null
   status: OrderStatus
   paymentMethod: PaymentMethod
   paymentStatus: PaymentStatus
@@ -17,6 +19,8 @@ export interface OrderEntity {
   subtotal: number
   tax: number
   deliveryCharge: number
+  discount: number
+  couponCode: string | null
   total: number
   createdAt: Date
   updatedAt: Date
@@ -42,6 +46,8 @@ export interface OrderResponse {
   orderType: OrderType
   tableNumber: string | null
   deliveryAddress: string | null
+  deliveryLatitude: number | null
+  deliveryLongitude: number | null
   status: OrderStatus
   paymentMethod: PaymentMethod
   paymentStatus: PaymentStatus
@@ -50,6 +56,8 @@ export interface OrderResponse {
   subtotal: number
   tax: number
   deliveryCharge: number
+  discount: number
+  couponCode: string | null
   total: number
   createdAt: string
   updatedAt: string
@@ -74,6 +82,8 @@ export function mapOrderToResponse(order: OrderEntity): OrderResponse {
     orderType: order.orderType,
     tableNumber: order.tableNumber,
     deliveryAddress: order.deliveryAddress,
+    deliveryLatitude: order.deliveryLatitude,
+    deliveryLongitude: order.deliveryLongitude,
     status: order.status,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
@@ -82,6 +92,8 @@ export function mapOrderToResponse(order: OrderEntity): OrderResponse {
     subtotal: order.subtotal,
     tax: order.tax,
     deliveryCharge: order.deliveryCharge,
+    discount: order.discount,
+    couponCode: order.couponCode,
     total: order.total,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
