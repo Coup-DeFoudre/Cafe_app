@@ -62,12 +62,20 @@ export default function CheckoutSummary({
     setCouponError('');
 
     try {
+      // Send cart items for server-side subtotal calculation
+      // This ensures consistency with order creation validation
+      const cartItems = items.map(item => ({
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+      }));
+
       const response = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           code: couponCode.trim(),
           subtotal: subtotal,
+          items: cartItems,
         }),
       });
 

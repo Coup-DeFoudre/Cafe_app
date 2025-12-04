@@ -6,7 +6,7 @@ import { DEFAULT_CAFE_SLUG } from '@/lib/constants';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { code, subtotal } = body;
+    const { code, subtotal: clientSubtotal, items } = body;
 
     if (!code) {
       return NextResponse.json(
@@ -26,6 +26,38 @@ export async function POST(request: NextRequest) {
         { error: 'Cafe not found' },
         { status: 404 }
       );
+    }
+
+    // Calculate subtotal from database prices if items are provided
+    // This ensures consistency with order creation validation
+    let subtotal = clientSubtotal;
+    
+    if (items && Array.isArray(items) && items.length > 0) {
+      const menuItemIds = items.map((item: { menuItemId: string }) => item.menuItemId);
+      const menuItems = await prisma.menuItem.findMany({
+        where: {
+          id: { in: menuItemIds },
+          cafeId: cafe.id,
+          isAvailable: true
+        },
+        select: { id: true, price: true }
+      });
+      
+      const menuItemsMap = new Map(menuItems.map(item => [item.id, item.price]));
+      
+      // Calculate subtotal from DB prices
+      let calculatedSubtotal = 0;
+      for (const item of items) {
+        const price = menuItemsMap.get(item.menuItemId);
+        if (price !== undefined) {
+          calculatedSubtotal += price * (item.quantity || 1);
+        }
+      }
+      
+      // Use calculated subtotal if we found all items
+      if (calculatedSubtotal > 0) {
+        subtotal = calculatedSubtotal;
+      }
     }
 
     // Find the coupon
