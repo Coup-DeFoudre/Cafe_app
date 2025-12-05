@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface Coupon {
   id: string;
@@ -52,6 +52,7 @@ export default function CouponFormDialog({
   coupon,
   onSuccess,
 }: CouponFormDialogProps) {
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     code: '',
@@ -100,15 +101,27 @@ export default function CouponFormDialog({
     e.preventDefault();
     
     if (!formData.code.trim()) {
-      toast.error('Coupon code is required');
+      toast({
+        title: 'Validation Error',
+        description: 'Coupon code is required',
+        variant: 'destructive',
+      });
       return;
     }
     if (!formData.discountValue || parseFloat(formData.discountValue) <= 0) {
-      toast.error('Please enter a valid discount value');
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid discount value',
+        variant: 'destructive',
+      });
       return;
     }
     if (formData.discountType === 'PERCENTAGE' && parseFloat(formData.discountValue) > 100) {
-      toast.error('Percentage discount cannot exceed 100%');
+      toast({
+        title: 'Validation Error',
+        description: 'Percentage discount cannot exceed 100%',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -139,15 +152,25 @@ export default function CouponFormDialog({
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(coupon ? 'Coupon updated' : 'Coupon created');
+        toast({
+          title: coupon ? 'Coupon updated successfully' : 'Coupon created successfully',
+        });
         onSuccess();
         onOpenChange(false);
       } else {
-        toast.error(data.error || 'Failed to save coupon');
+        toast({
+          title: 'Error',
+          description: data.error || 'Failed to save coupon',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Error saving coupon:', error);
-      toast.error('Failed to save coupon');
+      toast({
+        title: 'Error',
+        description: 'Failed to save coupon',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -224,7 +247,7 @@ export default function CouponFormDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="minOrderValue">Min. Order Value (₹)</Label>
+                <Label htmlFor="minOrderValue">Minimum Order Value (₹)</Label>
                 <Input
                   id="minOrderValue"
                   type="number"
@@ -238,7 +261,7 @@ export default function CouponFormDialog({
 
               {formData.discountType === 'PERCENTAGE' && (
                 <div className="space-y-2">
-                  <Label htmlFor="maxDiscount">Max. Discount (₹)</Label>
+                  <Label htmlFor="maxDiscount">Maximum Discount (₹)</Label>
                   <Input
                     id="maxDiscount"
                     type="number"
@@ -321,4 +344,3 @@ export default function CouponFormDialog({
     </Dialog>
   );
 }
-
